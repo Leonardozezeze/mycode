@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/cassian/code/C/CANopenLinux/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

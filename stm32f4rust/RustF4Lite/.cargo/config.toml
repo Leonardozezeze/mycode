@@ -1,0 +1,20 @@
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+
+runner = ["sh", "-c", "probe-rs download --chip STM32F407ZG \"$0\" && probe-rs reset --chip STM32F407ZG"]
+
+rustflags = [
+  "-C", "linker=flip-link",
+  "-C", "link-arg=-Tlink.x",
+  # This is needed if your flash or ram addresses are not aligned to 0x10000 in memory.x
+  # See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
+  "-C", "link-arg=--nmagic",
+]
+
+[build]
+target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
+
+[alias]
+# `cargo rb foo` will expand to `cargo run --bin foo`
+rb = "run --bin"
+# `cargo rrb foo` will expand to `cargo run --release --bin foo`
+rrb = "run --release --bin"

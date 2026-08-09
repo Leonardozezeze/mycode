@@ -1,0 +1,2 @@
+[default.rtt]
+enabled = true    #确保 RTT 功能正确启用

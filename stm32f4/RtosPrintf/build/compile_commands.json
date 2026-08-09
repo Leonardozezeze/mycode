@@ -1,0 +1,680 @@
+[
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/CMSIS/Src/system_stm32f4xx.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/CMSIS/Src/system_stm32f4xx.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Src/system_stm32f4xx.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/CMSIS/Src/system_stm32f4xx.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/croutine.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/croutine.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/croutine.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/croutine.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/event_groups.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/event_groups.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/event_groups.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/event_groups.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/list.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/list.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/list.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/list.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/queue.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/queue.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/queue.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/queue.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/stream_buffer.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/stream_buffer.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/stream_buffer.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/stream_buffer.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/tasks.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/tasks.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/tasks.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/tasks.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/timers.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/timers.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Src/timers.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/Src/timers.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/portable/heap_4.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable/heap_4.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable/heap_4.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/portable/heap_4.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/portable/port.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable/port.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable/port.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/Middlewares/FreeRTOS/portable/port.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -o CMakeFiles/SYS_LIB.dir/CMSIS/Start_Linker_SVD/startup_stm32f407xx.s.obj -c /home/cassian/code/stm32f4/RtosPrintf/CMSIS/Start_Linker_SVD/startup_stm32f407xx.s",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Start_Linker_SVD/startup_stm32f407xx.s",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir/CMSIS/Start_Linker_SVD/startup_stm32f407xx.s.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/Legacy/stm32f4xx_hal_can.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/Legacy/stm32f4xx_hal_can.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/Legacy/stm32f4xx_hal_can.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/Legacy/stm32f4xx_hal_can.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/Legacy/stm32f4xx_hal_eth.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/Legacy/stm32f4xx_hal_eth.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/Legacy/stm32f4xx_hal_eth.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/Legacy/stm32f4xx_hal_eth.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_adc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_adc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_adc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_adc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_adc_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_adc_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_adc_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_adc_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_can.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_can.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_can.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_can.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_cec.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_cec.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_cec.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_cec.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_cortex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_cortex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_cortex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_cortex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_crc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_crc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_crc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_crc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_cryp.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_cryp.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_cryp.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_cryp.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_cryp_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_cryp_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_cryp_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_cryp_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dac.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dac.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dac.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dac.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dac_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dac_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dac_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dac_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dcmi.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dcmi.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dcmi.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dcmi.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dcmi_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dcmi_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dcmi_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dcmi_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dfsdm.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dfsdm.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dfsdm.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dfsdm.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dma.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dma.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dma.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dma.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dma2d.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dma2d.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dma2d.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dma2d.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dma_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dma_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dma_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dma_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dsi.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dsi.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_dsi.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_dsi.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_eth.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_eth.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_eth.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_eth.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_exti.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_exti.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_exti.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_exti.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_flash.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_flash.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_flash.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_flash.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_flash_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_flash_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_flash_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_flash_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_flash_ramfunc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_flash_ramfunc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_flash_ramfunc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_flash_ramfunc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_fmpi2c.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_fmpi2c.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_fmpi2c.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_fmpi2c.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_fmpi2c_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_fmpi2c_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_fmpi2c_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_fmpi2c_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_fmpsmbus.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_fmpsmbus.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_fmpsmbus.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_fmpsmbus.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_fmpsmbus_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_fmpsmbus_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_fmpsmbus_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_fmpsmbus_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_gpio.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_gpio.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_gpio.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_gpio.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_hash.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_hash.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_hash.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_hash.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_hash_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_hash_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_hash_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_hash_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_hcd.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_hcd.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_hcd.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_hcd.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_i2c.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_i2c.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_i2c.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_i2c.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_i2c_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_i2c_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_i2c_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_i2c_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_i2s.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_i2s.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_i2s.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_i2s.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_i2s_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_i2s_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_i2s_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_i2s_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_irda.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_irda.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_irda.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_irda.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_iwdg.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_iwdg.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_iwdg.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_iwdg.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_lptim.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_lptim.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_lptim.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_lptim.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_ltdc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_ltdc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_ltdc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_ltdc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_ltdc_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_ltdc_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_ltdc_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_ltdc_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_mmc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_mmc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_mmc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_mmc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_msp_template.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_msp_template.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_msp_template.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_msp_template.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_nand.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_nand.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_nand.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_nand.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_nor.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_nor.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_nor.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_nor.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pccard.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pccard.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pccard.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pccard.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pcd.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pcd.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pcd.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pcd.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pcd_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pcd_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pcd_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pcd_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pwr.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pwr.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pwr.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pwr.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pwr_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pwr_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_pwr_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_pwr_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_qspi.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_qspi.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_qspi.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_qspi.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rcc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rcc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rcc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rcc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rcc_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rcc_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rcc_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rcc_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rng.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rng.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rng.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rng.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rtc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rtc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rtc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rtc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rtc_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rtc_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_rtc_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_rtc_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sai.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sai.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sai.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sai.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sai_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sai_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sai_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sai_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sd.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sd.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sd.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sd.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sdram.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sdram.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sdram.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sdram.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_smartcard.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_smartcard.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_smartcard.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_smartcard.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_smbus.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_smbus.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_smbus.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_smbus.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_spdifrx.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_spdifrx.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_spdifrx.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_spdifrx.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_spi.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_spi.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_spi.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_spi.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sram.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sram.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_sram.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_sram.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_tim.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_tim.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_tim.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_tim.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_tim_ex.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_tim_ex.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_tim_ex.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_tim_ex.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_timebase_rtc_alarm_template.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_timebase_rtc_alarm_template.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_timebase_rtc_alarm_template.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_timebase_rtc_alarm_template.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_timebase_rtc_wakeup_template.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_timebase_rtc_wakeup_template.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_timebase_rtc_wakeup_template.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_timebase_rtc_wakeup_template.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_timebase_tim_template.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_timebase_tim_template.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_timebase_tim_template.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_timebase_tim_template.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_uart.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_uart.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_uart.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_uart.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_usart.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_usart.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_usart.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_usart.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_wwdg.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_wwdg.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_hal_wwdg.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_hal_wwdg.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_adc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_adc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_adc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_adc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_crc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_crc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_crc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_crc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_dac.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_dac.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_dac.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_dac.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_dma.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_dma.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_dma.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_dma.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_dma2d.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_dma2d.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_dma2d.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_dma2d.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_exti.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_exti.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_exti.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_exti.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_fmc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_fmc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_fmc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_fmc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_fmpi2c.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_fmpi2c.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_fmpi2c.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_fmpi2c.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_fsmc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_fsmc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_fsmc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_fsmc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_gpio.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_gpio.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_gpio.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_gpio.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_i2c.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_i2c.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_i2c.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_i2c.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_lptim.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_lptim.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_lptim.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_lptim.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_pwr.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_pwr.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_pwr.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_pwr.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_rcc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_rcc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_rcc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_rcc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_rng.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_rng.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_rng.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_rng.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_rtc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_rtc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_rtc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_rtc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_sdmmc.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_sdmmc.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_sdmmc.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_sdmmc.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_spi.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_spi.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_spi.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_spi.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_tim.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_tim.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_tim.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_tim.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_usart.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_usart.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_usart.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_usart.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_usb.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_usb.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_usb.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_usb.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -std=gnu99 -o CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_utils.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_utils.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/HAL/Src/stm32f4xx_ll_utils.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir/HAL/Src/stm32f4xx_ll_utils.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -ffunction-sections -fdata-sections -fno-builtin -std=gnu99 -Og -o CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/app.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Core/Src/app.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Core/Src/app.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/app.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -ffunction-sections -fdata-sections -fno-builtin -std=gnu99 -Og -o CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/bsp.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Core/Src/bsp.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Core/Src/bsp.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/bsp.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -ffunction-sections -fdata-sections -fno-builtin -std=gnu99 -Og -o CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/main.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Core/Src/main.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Core/Src/main.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/main.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -ffunction-sections -fdata-sections -fno-builtin -std=gnu99 -Og -o CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/stm32f4xx_hal_msp.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Core/Src/stm32f4xx_hal_msp.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Core/Src/stm32f4xx_hal_msp.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/stm32f4xx_hal_msp.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -ffunction-sections -fdata-sections -fno-builtin -std=gnu99 -Og -o CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/stm32f4xx_it.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Core/Src/stm32f4xx_it.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Core/Src/stm32f4xx_it.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/stm32f4xx_it.c.obj"
+},
+{
+  "directory": "/home/cassian/code/stm32f4/RtosPrintf/build",
+  "command": "/usr/bin/arm-none-eabi-gcc -DSTM32F407xx -DUSE_HAL_DRIVER -I/home/cassian/code/stm32f4/RtosPrintf/CMSIS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/portable -I/home/cassian/code/stm32f4/RtosPrintf/Middlewares/FreeRTOS/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc -I/home/cassian/code/stm32f4/RtosPrintf/HAL/Inc/Legacy -I/home/cassian/code/stm32f4/RtosPrintf/Core/Inc -I/home/cassian/code/stm32f4/RtosPrintf/Driver/Inc -g -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g -Wall -ffunction-sections -fdata-sections -fno-builtin -std=gnu99 -Og -o CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/syscalls.c.obj -c /home/cassian/code/stm32f4/RtosPrintf/Core/Src/syscalls.c",
+  "file": "/home/cassian/code/stm32f4/RtosPrintf/Core/Src/syscalls.c",
+  "output": "/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/MyStm32F407Project.elf.dir/Core/Src/syscalls.c.obj"
+}
+]

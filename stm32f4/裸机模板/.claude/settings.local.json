@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmake --build .)",
+      "Bash(echo \"exit=$? \\(1=无残留\\)\")",
+      "Bash(rm -rf \"/home/cassian/code/stm32f4/裸机模板/Middlewares/FreeRTOS\" \"/home/cassian/code/stm32f4/裸机模板/Core/Inc/FreeRTOSConfig.h\" && echo \"deleted\" && ls \"/home/cassian/code/stm32f4/裸机模板/Middlewares/\" 2>/dev/null; ls \"/home/cassian/code/stm32f4/裸机模板/Core/Inc/\")",
+      "Bash(rm -rf build)",
+      "Bash(cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug .)"
+    ],
+    "additionalDirectories": [
+      "/home/cassian/code/stm32f4/裸机模板/Middlewares/FreeRTOS"
+    ]
+  }
+}

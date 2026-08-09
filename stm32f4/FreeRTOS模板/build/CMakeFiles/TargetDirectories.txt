@@ -1,0 +1,5 @@
+/home/cassian/code/stm32f4/FreeRTOS模板/build/CMakeFiles/SYS_LIB.dir
+/home/cassian/code/stm32f4/FreeRTOS模板/build/CMakeFiles/HAL_LIB.dir
+/home/cassian/code/stm32f4/FreeRTOS模板/build/CMakeFiles/MyStm32F407Project.elf.dir
+/home/cassian/code/stm32f4/FreeRTOS模板/build/CMakeFiles/edit_cache.dir
+/home/cassian/code/stm32f4/FreeRTOS模板/build/CMakeFiles/rebuild_cache.dir

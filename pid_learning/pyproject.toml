@@ -1,0 +1,12 @@
+[project]
+name = "pid-learning"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "control>=0.10.2",
+    "matplotlib>=3.11.1",
+    "numpy>=2.5.1",
+    "scipy>=1.18.0",
+]

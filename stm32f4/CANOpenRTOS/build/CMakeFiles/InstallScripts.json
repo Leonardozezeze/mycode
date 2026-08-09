@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/cassian/code/stm32f4/CANOpenRTOS/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
