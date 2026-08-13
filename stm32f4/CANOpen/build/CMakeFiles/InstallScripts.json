@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/cassian/code/stm32f4/CANOpen/build/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

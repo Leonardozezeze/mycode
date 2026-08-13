@@ -1,5 +1,0 @@
-/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/SYS_LIB.dir
-/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/HAL_LIB.dir
-/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/MyStm32F407Project.elf.dir
-/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/edit_cache.dir
-/home/cassian/code/stm32f4/RtosPrintf/build/CMakeFiles/rebuild_cache.dir

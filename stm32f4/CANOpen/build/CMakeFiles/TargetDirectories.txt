@@ -1,6 +1,0 @@
-/home/cassian/code/stm32f4/CANOpen/build/CMakeFiles/SYS_LIB.dir
-/home/cassian/code/stm32f4/CANOpen/build/CMakeFiles/HAL_LIB.dir
-/home/cassian/code/stm32f4/CANOpen/build/CMakeFiles/CANOPEN_LIB.dir
-/home/cassian/code/stm32f4/CANOpen/build/CMakeFiles/MyStm32F407Project.elf.dir
-/home/cassian/code/stm32f4/CANOpen/build/CMakeFiles/edit_cache.dir
-/home/cassian/code/stm32f4/CANOpen/build/CMakeFiles/rebuild_cache.dir
