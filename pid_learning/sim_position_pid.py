@@ -123,7 +123,7 @@ if __name__=="__main__":
     plt.title("Position PID with Anti-windup Simulation")
     plt.grid(True,alpha=0.3)
     plt.legend()
-    plt.savefig("pid_template_result.png",dpi=150)
+    plt.savefig("pid_position_result.png",dpi=150)
     plt.show()
-    print("仿真结束,查看生成的pid_template_result.png")
+    print("仿真结束,查看生成的pid_position_result.png")
 
