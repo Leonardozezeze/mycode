@@ -34,7 +34,7 @@ class IncrementalPID:
         self.first_run=True
         print("PID内部状态已重置")
 
-    def update(self, setpoint, measurement, dt):  # 增加dt参数
+    def update(self, setpoint, measurement):
         error = setpoint - measurement
         
         if self.first_run:
@@ -47,8 +47,8 @@ class IncrementalPID:
         
         # 增量式PID计算 - 修正版
         du = (self.Kp * (error - e1)           # 比例增量
-            + self.Ki * error * dt           # 积分增量 (乘以dt)
-            + self.Kd * (error - 2*e1 + e2) / dt)  # 微分增量 (除以dt)
+            + self.Ki * error * self.dt           # 积分增量 (乘以dt)
+            + self.Kd * (error - 2*e1 + e2) / self.dt)  # 微分增量 (除以dt)
         
         raw_output = self._prev_output + du
         
@@ -85,7 +85,7 @@ if __name__=="__main__":
     )
     #系统变量
     setpoint=20.0#目标值
-    time=10#仿真时间
+    time=500#仿真时间
     plant_state=0.0#当前值
     tau=0.5#系统惯性时间常数
     #数据记录
