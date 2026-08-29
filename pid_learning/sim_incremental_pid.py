@@ -77,7 +77,7 @@ class IncrementalPID:
 if __name__=="__main__":
     pid=IncrementalPID(
         Kp=0.8,
-        Ki=0.02,
+        Ki=0.4,
         Kd=0.05,
         dt=0.01,
         output_max=100.0,
@@ -85,7 +85,7 @@ if __name__=="__main__":
     )
     #系统变量
     setpoint=20.0#目标值
-    time=500#仿真时间
+    time=25#仿真时间
     plant_state=0.0#当前值
     tau=0.5#系统惯性时间常数
     #数据记录
