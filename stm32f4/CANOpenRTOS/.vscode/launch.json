@@ -7,7 +7,7 @@
             "type": "cortex-debug",
             "executable": "./build/MyStm32F407Project.elf",
             "request": "launch",
-            "gdbPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gdb.exe",
+            "gdbPath": "arm-none-eabi-gdb",
             "servertype": "openocd",
             "serverpath": "openocd",
             "device": "STM32F407VG",

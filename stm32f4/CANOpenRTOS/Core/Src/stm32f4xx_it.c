@@ -23,6 +23,12 @@
 #include "main.h"
 #include "FreeRTOS.h"
 #include "task.h"
+
+/* FreeRTOS 端口内核中断入口(定义见 portable/port.c) */
+extern void xPortSysTickHandler(void);
+
+/* FreeRTOS 端口内核中断入口(见 portable/port.c) */
+extern void xPortSysTickHandler(void);
 /** @addtogroup STM32F4xx_HAL_Examples
  * @{
  */
@@ -111,6 +117,21 @@ void UsageFault_Handler(void)
  */
 void DebugMon_Handler(void)
 {
+}
+
+/**
+ * @brief  SysTick:FreeRTOS 内核节拍。
+ *         HAL_Init() 在调度器启动前就已使能 SysTick,此时 FreeRTOS
+ *         任务链表尚未初始化,不能进 xTaskIncrementTick(空指针硬错误),
+ *         该阶段只推进 HAL 的 uwTick。
+ */
+void SysTick_Handler(void)
+{
+  if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+    xPortSysTickHandler();
+  } else {
+    HAL_IncTick();
+  }
 }
 
 /******************************************************************************/

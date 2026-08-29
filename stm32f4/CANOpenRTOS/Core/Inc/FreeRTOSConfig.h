@@ -60,7 +60,10 @@
 /* 7. 中断服务函数映射 */
 #define vPortSVCHandler                     SVC_Handler
 #define xPortPendSVHandler                  PendSV_Handler
-#define xPortSysTickHandler                 SysTick_Handler
+/* 注意:不把 xPortSysTickHandler 直接别名为 SysTick_Handler。
+ * SysTick 在 HAL_Init() 时就已使能(早于调度器启动),若直接进
+ * xTaskIncrementTick,此时任务链表尚未初始化,会空指针硬错误。
+ * SysTick_Handler 改在 stm32f4xx_it.c 中实现,带调度器状态保护。 */
 
 /* 8. 断言 */
 #define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }

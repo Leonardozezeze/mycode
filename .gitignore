@@ -1,2 +1,4 @@
 # Build directories
 build/
+target/
+.claude/
