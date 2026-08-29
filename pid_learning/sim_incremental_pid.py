@@ -34,35 +34,34 @@ class IncrementalPID:
         self.first_run=True
         print("PID内部状态已重置")
 
-    def update(self,setpoint,measurement):
-        error=setpoint-measurement
-        #前两步缺失的历史误差按当前误差处理, 避免微分项突变
+    def update(self, setpoint, measurement, dt):  # 增加dt参数
+        error = setpoint - measurement
+        
         if self.first_run:
-            e1=error
-            e2=error
-            self.first_run=False
+            e1 = error
+            e2 = error
+            self.first_run = False
         else:
-            e1=self._prev_error
-            e2=self._prev_error2
-
-        #增量式PID计算
-        du=(self.Kp*(error-e1)
-            +self.Ki*error
-            +self.Kd*(error-2*e1+e2))
-
-        #累加到上一次输出, 并做输出限幅(无需积分退绕)
-        raw_output=self._prev_output+du
-        if raw_output>self.output_max:
-            control_signal=self.output_max
-        elif raw_output<self.output_min:
-            control_signal=self.output_min
+            e1 = self._prev_error
+            e2 = self._prev_error2
+        
+        # 增量式PID计算 - 修正版
+        du = (self.Kp * (error - e1)           # 比例增量
+            + self.Ki * error * dt           # 积分增量 (乘以dt)
+            + self.Kd * (error - 2*e1 + e2) / dt)  # 微分增量 (除以dt)
+        
+        raw_output = self._prev_output + du
+        
+        if raw_output > self.output_max:
+            control_signal = self.output_max
+        elif raw_output < self.output_min:
+            control_signal = self.output_min
         else:
-            control_signal=raw_output
-
-        #更新状态: 存限幅后的实际输出, 下次增量从真实输出上累加
-        self._prev_error2=e1
-        self._prev_error=error
-        self._prev_output=control_signal
+            control_signal = raw_output
+        
+        self._prev_error2 = e1
+        self._prev_error = error
+        self._prev_output = control_signal
         return control_signal
 
     def set_gains(self,Kp=None,Ki=None,Kd=None):
