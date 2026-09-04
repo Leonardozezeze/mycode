@@ -1,0 +1,10 @@
+[target.thumbv7m-none-eabi]
+# probe-rs 烧录器
+runner = "probe-rs run --chip STM32F103C6"
+# OpenOCD + GDB (如果用 OpenOCD)
+# runner = "arm-none-eabi-gdb -q -x openocd.gdb"
+
+rustflags = ["-C", "link-arg=-Tlink.x"]
+
+[build]
+target = "thumbv7m-none-eabi"

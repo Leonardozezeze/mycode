@@ -1,3 +1,4 @@
 import torch
-print(torch.__version__)          # 显示版本号
-print(torch.xpu.is_available())   # 应输出 True
+import ultralytics
+print(torch.__version__)
+print(torch.cuda.is_available())  # 应输出 True（如果 ROCm 配置正确）

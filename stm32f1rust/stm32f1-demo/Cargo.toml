@@ -1,0 +1,10 @@
+[package]
+name = "stm32f1-demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+stm32f1xx-hal = { version = "0.11", features = ["stm32f103"] }
+panic-halt = "0.2"

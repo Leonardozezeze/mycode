@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "type": "cortex-debug",
+            "executable": "./build/MyStm32F103Project.elf",
+            "request": "launch",
+            "gdbPath": "arm-none-eabi-gdb",
+            "servertype": "openocd",
+            "serverpath": "openocd",
+            "device": "STM32F103C6",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "interface": "swd",
+            "preLaunchTask": "Cmake:build",
+            "svdFile": "./Drivers/CMSIS/Src/STM32F103.svd",
+            "serverArgs": [
+                "-c",
+                "gdb port 50000",
+                "-c",
+                "tcl port 50001",
+                "-c",
+                "telnet port 50002"
+            ]
+        }
+    ]
+}
