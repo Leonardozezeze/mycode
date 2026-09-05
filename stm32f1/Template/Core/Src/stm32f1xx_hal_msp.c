@@ -86,6 +86,51 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *htim_base)
 }
 
 /**
+  * @brief  Initializes the UART MSP (USART1 clock, PA9/PA10 pins, NVIC).
+  * @param  huart: UART handle
+  * @retval None
+  */
+void HAL_UART_MspInit(UART_HandleTypeDef *huart)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if (huart->Instance == USART1)
+  {
+    __HAL_RCC_USART1_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+
+    /* PA9  -> USART1_TX, PA10 -> USART1_RX */
+    GPIO_InitStruct.Pin   = USART1_TX_PIN;
+    GPIO_InitStruct.Mode  = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(USART1_GPIO_PORT, &GPIO_InitStruct);
+
+    GPIO_InitStruct.Pin  = USART1_RX_PIN;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(USART1_GPIO_PORT, &GPIO_InitStruct);
+
+    /* USART1 全局中断:为后续中断接收预留;阻塞式 printf 不依赖它 */
+    HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USART1_IRQn);
+  }
+}
+
+/**
+  * @brief  DeInitializes the UART MSP.
+  * @param  huart: UART handle
+  * @retval None
+  */
+void HAL_UART_MspDeInit(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART1)
+  {
+    __HAL_RCC_USART1_CLK_DISABLE();
+    HAL_GPIO_DeInit(USART1_GPIO_PORT, USART1_TX_PIN | USART1_RX_PIN);
+    HAL_NVIC_DisableIRQ(USART1_IRQn);
+  }
+}
+
+/**
   * @}
   */
 

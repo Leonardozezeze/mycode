@@ -7,19 +7,22 @@
 
 /* 句柄定义 */
 TIM_HandleTypeDef htim4;
+UART_HandleTypeDef huart1;
 
 static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM4_Init(void);
+static void MX_USART1_UART_Init(void);
 
 /* 板级初始化:统一入口,按顺序初始化时钟和所有外设 */
 void BSP_Init(void)
 {
     HAL_Init();
     SystemClock_Config();
+    delay_init(); /* 使能 DWT 周期计数,驱动 delay_us/delay_ms */
     MX_GPIO_Init();
     MX_TIM4_Init();
-    delay_init();   /* 使能 DWT 周期计数,驱动 delay_us/delay_ms */
+    MX_USART1_UART_Init(); /* 注意:先于 printf 使用(时钟/引脚/NVIC 见 HAL_UART_MspInit) */
 }
 
 /* 系统时钟:HSE 8MHz -> PLL(x9) -> SYSCLK 72MHz,
@@ -112,4 +115,21 @@ static void MX_TIM4_Init(void)
         Error_Handler();
     }
     HAL_TIM_Base_Start_IT(&htim4);   /* 启动 1ms 周期中断,驱动 HAL_TIM_PeriodElapsedCallback */
+}
+
+/* USART1 调试串口:115200-8-N-1(USART1 挂在 APB2=72MHz)。
+ * 时钟使能 / PA9-PA10 引脚配置 / NVIC 均在 HAL_UART_MspInit(见 stm32f1xx_hal_msp.c)。 */
+static void MX_USART1_UART_Init(void)
+{
+    huart1.Instance          = USART1;
+    huart1.Init.BaudRate     = 115200;
+    huart1.Init.WordLength   = UART_WORDLENGTH_8B;
+    huart1.Init.StopBits     = UART_STOPBITS_1;
+    huart1.Init.Parity       = UART_PARITY_NONE;
+    huart1.Init.Mode         = UART_MODE_TX_RX;
+    huart1.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart1) != HAL_OK) {
+        Error_Handler();
+    }
 }

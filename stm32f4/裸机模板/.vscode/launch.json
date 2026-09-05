@@ -7,7 +7,6 @@
             "type": "cortex-debug",
             "executable": "./build/MyStm32F407Project.elf",
             "request": "launch",
-            "gdbPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gdb.exe",
             "servertype": "openocd",
             "serverpath": "openocd",
             "device": "STM32F407VG",
@@ -17,15 +16,7 @@
             ],
             "interface": "swd",
             "preLaunchTask": "Cmake:build",
-            "svdFile": "./CMSIS/Start_Linker_SVD/STM32F407.svd",
-            "serverArgs": [
-                "-c",
-                "gdb port 50000",
-                "-c",
-                "tcl port 50001",
-                "-c",
-                "telnet port 50002"
-            ]
+            "svdFile": "./Drivers/CMSIS/Start_Linker_SVD/STM32F407.svd"
         }
     ]
 }

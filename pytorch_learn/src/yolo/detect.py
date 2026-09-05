@@ -4,7 +4,7 @@ from ultralytics import YOLO
 model = YOLO("yolov8n.pt")  # 可换成 yolov8s.pt, yolov8m.pt 等
 
 # 对单张图片推理
-results = model("https://ultralytics.com/images/bus.jpg")  # 可以是 URL 或本地路径
+results = model("bus.jpg")  # 可以是 URL 或本地路径
 
 # 打印检测结果
 for r in results:

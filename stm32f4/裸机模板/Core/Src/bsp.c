@@ -89,17 +89,17 @@ void delay_ms(uint32_t ms)
         delay_us(1000);
     }
 }
-/* GPIO:板载 LED PF9 / PF10 */
+/* GPIO:板载 LED*/
 static void MX_GPIO_Init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-    __HAL_RCC_GPIOF_CLK_ENABLE();
-    GPIO_InitStruct.Pin   = GPIO_PIN_9;
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIO_InitStruct.Pin   = LED_PIN;
     GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull  = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+    HAL_GPIO_Init(LED_PORT, &GPIO_InitStruct);
 }
 
 /* TIM7 基础定时器,1ms 周期中断:定时器时钟 2*PCLK1=84MHz,

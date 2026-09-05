@@ -12,6 +12,9 @@ extern "C" {
 
 #include "stm32f4xx_hal.h"
 
+#define LED_PORT GPIOA
+#define LED_PIN GPIO_PIN_1
+
 /* 句柄集中声明 */
 extern TIM_HandleTypeDef htim7;   /* TIM7, 1ms 中断定时器 */
 

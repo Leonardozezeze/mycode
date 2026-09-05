@@ -5,18 +5,22 @@
 
 #include "main.h"
 #include "app.h"
+#include <stdio.h>
 
-/* 应用层初始化:无资源需要预先创建 */
+/* 应用层初始化:在 BSP_Init 之后调用,BSP_Init 已初始化 USART1,printf 可用 */
 void APP_Init(void)
 {
-    
+    printf("\r\n[APP] startup @ %lu Hz\r\n", (unsigned long)SystemCoreClock);
 }
 
 /* 应用层主逻辑:超级循环每轮调用一次。
- * 标志任务:PC13 LED 每 500ms 翻转一次(低电平点亮)。 */
+ * 标志任务:PC13 LED 每 500ms 翻转一次(低电平点亮),并打印节拍。 */
+static uint32_t s_tick = 0;
+
 void APP_Loop(void)
 {
     HAL_GPIO_TogglePin(LED_GPIO_PORT, LED_GPIO_PIN);
+    printf("tick %lu\r\n", (unsigned long)++s_tick);
     delay_ms(500);
 }
 

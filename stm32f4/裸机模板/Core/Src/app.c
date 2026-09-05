@@ -13,10 +13,10 @@ void APP_Init(void)
 }
 
 /* 应用层主逻辑:超级循环每轮调用一次。
- * 标志任务:PF9 LED 每 500ms 翻转一次。 */
+ * 标志任务:板载LED 每 500ms 翻转一次。 */
 void APP_Loop(void)
 {
-    HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_9);
+    HAL_GPIO_TogglePin(LED_PORT, LED_PIN);
     delay_ms(500);
 }
 
