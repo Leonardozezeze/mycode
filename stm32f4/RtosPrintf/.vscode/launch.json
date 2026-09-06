@@ -17,7 +17,7 @@
             ],
             "interface": "swd",
             "preLaunchTask": "Cmake:build",
-            "svdFile": "./CMSIS/Start_Linker_SVD/STM32F407.svd",
+            "svdFile": "./Drivers/CMSIS/Src/STM32F407.svd",
             "serverArgs": [
                 "-c",
                 "gdb port 50000",

@@ -148,7 +148,7 @@ void TIM7_IRQHandler(void)
 }
 
 /* CAN1 中断:驱动层在 CO_CANmodule_init 里激活 RX/TX 通知
- * (见 Middlewares/CANopenNode_STM32/CO_driver_STM32.c) */
+ * (见 Drivers/Middleware/CANopenNode/CANopenNode_STM32/CO_driver_STM32.c) */
 void CAN1_TX_IRQHandler(void)
 {
   HAL_CAN_IRQHandler(&hcan1);

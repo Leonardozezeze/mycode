@@ -1,176 +1,159 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
 
 # ==============================================================================
-# 目标平台与工具链
+# 交叉编译工具链设置(必须在 project() 之前)
 # ==============================================================================
 set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_PROCESSOR ARM)
+set(CMAKE_SYSTEM_PROCESSOR arm)
 
-set(TOOLCHAIN_PREFIX "arm-none-eabi")
-set(CMAKE_C_COMPILER   ${TOOLCHAIN_PREFIX}-gcc)
-set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
-set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
-set(CMAKE_AR           ${TOOLCHAIN_PREFIX}-ar)
-set(CMAKE_OBJCOPY      ${TOOLCHAIN_PREFIX}-objcopy)
-set(CMAKE_OBJDUMP      ${TOOLCHAIN_PREFIX}-objdump)
-set(CMAKE_SIZE         ${TOOLCHAIN_PREFIX}-size)
-set(CMAKE_LINKER       ${TOOLCHAIN_PREFIX}-ld)
+set(TOOLCHAIN_PREFIX arm-none-eabi-)
+set(CMAKE_C_COMPILER   ${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}g++)
+set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PREFIX}gcc)
+set(CMAKE_AR           ${TOOLCHAIN_PREFIX}ar)
+set(CMAKE_OBJCOPY      ${TOOLCHAIN_PREFIX}objcopy)
+set(CMAKE_SIZE         ${TOOLCHAIN_PREFIX}size)
 
-# 交叉编译：禁止 CMake 运行链接测试（嵌入式目标无法运行可执行程序）
+# 交叉编译:跳过链接器测试,避免 try_compile 失败
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-set(CMAKE_C_COMPILER_WORKS 1)
 
-project(MyStm32F407Project C CXX ASM)
+# 允许通过 -DTOOLCHAIN_PATH=... 指定工具链安装目录
+if(DEFINED TOOLCHAIN_PATH)
+    set(CMAKE_C_COMPILER   ${TOOLCHAIN_PATH}/${CMAKE_C_COMPILER})
+    set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PATH}/${CMAKE_CXX_COMPILER})
+    set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PATH}/${CMAKE_ASM_COMPILER})
+    set(CMAKE_OBJCOPY      ${TOOLCHAIN_PATH}/${CMAKE_OBJCOPY})
+    set(CMAKE_SIZE         ${TOOLCHAIN_PATH}/${CMAKE_SIZE})
+endif()
+
+project(MyStm32F407Project LANGUAGES C ASM)
 
 # ==============================================================================
 # 构建类型与 IDE 支持
 # ==============================================================================
+# 默认 Debug(-Og -g3),可用 -DCMAKE_BUILD_TYPE=Release 切换(-Os)
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type: Debug or Release" FORCE)
+    set(CMAKE_BUILD_TYPE Debug)
 endif()
+
+set(CMAKE_C_FLAGS_DEBUG   "-Og -g3")
+set(CMAKE_C_FLAGS_RELEASE "-Os -DNDEBUG")
+set(CMAKE_ASM_FLAGS_DEBUG   "-g3")
+set(CMAKE_ASM_FLAGS_RELEASE "")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # 为 clangd / LSP 生成 compile_commands.json
 
 # ==============================================================================
-# CPU 与 FPU 编译标志
+# MCU 与链接脚本
 # ==============================================================================
-set(CPU_FLAGS  -mcpu=cortex-m4 -mthumb)
-set(FPU_FLAGS  -mfloat-abi=hard -mfpu=fpv4-sp-d16)
+set(MCU_FAMILY    STM32F407xx)
+set(MCU_FLAGS     -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16)
+set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Src/STM32F407XX_FLASH.ld)
 
 # ==============================================================================
-# 全局宏定义（所有 target 共享）
-# ==============================================================================
-add_compile_definitions(STM32F407xx USE_HAL_DRIVER)
-
-# ==============================================================================
-# 源文件收集（使用 CONFIGURE_DEPENDS 使增量构建自动检测新增/删除文件）
+# 源文件收集(目录缺失时对应 GLOB 结果为空,自动跳过)
 # ==============================================================================
 
-# ---- 启动文件 ----
-set(STARTUP_ASM CMSIS/Start_Linker_SVD/startup_stm32f407xx.s)
-set_source_files_properties(${STARTUP_ASM} PROPERTIES LANGUAGE ASM)
+# 用户应用源码 (Core/Src: main/bsp/app + 中断 + MSP + syscalls,含 OD.c)
+file(GLOB CORE_SOURCES     CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Core/Src/*.c)
 
-# ---- 用户源码 (Core/Src: main/bsp/app + 中断 + MSP + syscalls) ----
-# ---- 自己写的驱动 (Driver/Src) ----
-file(GLOB_RECURSE USER_SOURCES
-    CONFIGURE_DEPENDS
-    "Core/Src/*.c"
-    "Core/Src/*.cpp"
-    "Driver/Src/*.c"
-    "Driver/Src/*.cpp"
+# CMSIS 系统源码 + 启动文件(.s 与 .ld/.svd 同放在 CMSIS/Src)
+file(GLOB SYSTEM_SOURCES   CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Src/*.c)
+set(STARTUP_SOURCE ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Src/startup_stm32f407xx.s)
+
+# HAL 驱动库源码(排除 *_template.c;Legacy 目录不参与编译)
+file(GLOB HAL_SOURCES      CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/HAL/Src/*.c)
+list(FILTER HAL_SOURCES EXCLUDE REGEX ".*_template\\.c$")
+
+# FreeRTOS 内核源码 (无中间件时为空)
+file(GLOB FREERTOS_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_SOURCE_DIR}/Drivers/Middleware/FreeRTOS/Src/*.c
+    ${CMAKE_SOURCE_DIR}/Drivers/Middleware/FreeRTOS/portable/*.c
 )
 
-# ---- CMSIS + FreeRTOS ----
-file(GLOB_RECURSE SYSTEM_SOURCES
-    CONFIGURE_DEPENDS
-    "CMSIS/Src/*.c"
-    "Middlewares/FreeRTOS/Src/*.c"
-    "Middlewares/FreeRTOS/portable/*.c"
-)
+# CANopenNode 协议栈源码 (无中间件时为空)
+# 移植层 CANopenNode_STM32 用非递归 GLOB(顶层 .c);协议栈按 301/303/... 分目录 GLOB。
+file(GLOB CANOPEN_301_SOURCES     CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/301/*.c)
+file(GLOB CANOPEN_303_SOURCES     CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/303/*.c)
+file(GLOB CANOPEN_304_SOURCES     CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/304/*.c)
+file(GLOB CANOPEN_305_SOURCES     CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/305/*.c)
+file(GLOB CANOPEN_309_SOURCES     CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/309/*.c)
+file(GLOB CANOPEN_EXTRA_SOURCES   CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/extra/*.c)
+file(GLOB CANOPEN_STORAGE_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/storage/*.c)
+file(GLOB CANOPEN_STM32_SOURCES   CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/CANopenNode_STM32/*.c)
 
-# ---- CANopenNode 协议栈 + STM32 移植层 (Middlewares/CANopenNode_STM32/) ----
-# 移植层用非递归 GLOB(顶层 .c),协议栈用 GLOB_RECURSE(含 301/303/.../storage)。
-# 若移植层也用 GLOB_RECURSE,会把 CANopenNode/ 子目录里的协议栈源码重复匹配,导致重复符号。
-file(GLOB_RECURSE CANOPEN_CORE_SOURCES
-    CONFIGURE_DEPENDS
-    "Middlewares/CANopenNode_STM32/CANopenNode/*.c"  # 协议栈本体 (301/303/.../storage)
-)
-file(GLOB CANOPEN_PORT_SOURCES
-    CONFIGURE_DEPENDS
-    "Middlewares/CANopenNode_STM32/*.c"              # STM32 移植:驱动 + 应用 + 对象字典 OD.c
-)
-set(CANOPEN_SOURCES ${CANOPEN_CORE_SOURCES} ${CANOPEN_PORT_SOURCES})
+file(GLOB CANOPEN_MAIN_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/CANopen.c)
 
-# ---- HAL 驱动库 ----
-file(GLOB_RECURSE HAL_SOURCES
-    CONFIGURE_DEPENDS
-    "HAL/Src/*.c"
-)
-
-# ==============================================================================
-# 头文件搜索路径
-# ==============================================================================
-set(CANOPEN_INCLUDE_DIRS
-    Middlewares/CANopenNode_STM32/CANopenNode  # 协议栈根:源码按 301/303/... 相对引用头文件
-    Middlewares/CANopenNode_STM32              # 移植层:CO_driver_target.h / OD.h / CO_app_STM32.h
-)
-
-set(COMMON_INCLUDE_DIRS
-    CMSIS/Inc
-    Middlewares/FreeRTOS/portable
-    Middlewares/FreeRTOS/Inc
-    HAL/Inc
-    HAL/Inc/Legacy
-    Core/Inc
-    Driver/Inc
-    ${CANOPEN_INCLUDE_DIRS}
-)
-
-# ==============================================================================
-# 静态库 Target：系统库 (CMSIS + FreeRTOS + startup)
-# ==============================================================================
-add_library(SYS_LIB STATIC ${SYSTEM_SOURCES} ${STARTUP_ASM})
-target_include_directories(SYS_LIB PUBLIC ${COMMON_INCLUDE_DIRS})
-target_compile_options(SYS_LIB PRIVATE ${CPU_FLAGS} ${FPU_FLAGS} -g -Wall $<$<COMPILE_LANGUAGE:C>:-std=gnu99>)
-
-# ==============================================================================
-# 静态库 Target：HAL 驱动库
-# ==============================================================================
-add_library(HAL_LIB STATIC ${HAL_SOURCES})
-target_include_directories(HAL_LIB PUBLIC ${COMMON_INCLUDE_DIRS})
-target_compile_options(HAL_LIB PRIVATE ${CPU_FLAGS} ${FPU_FLAGS} -g -Wall $<$<COMPILE_LANGUAGE:C>:-std=gnu99>)
-target_link_libraries(HAL_LIB PRIVATE SYS_LIB)
-
-# ==============================================================================
-# 静态库 Target：CANopenNode 协议栈
-# ==============================================================================
-add_library(CANOPEN_LIB STATIC ${CANOPEN_SOURCES})
-target_include_directories(CANOPEN_LIB PUBLIC ${COMMON_INCLUDE_DIRS})
-target_compile_options(CANOPEN_LIB PRIVATE ${CPU_FLAGS} ${FPU_FLAGS} -g -Wall $<$<COMPILE_LANGUAGE:C>:-std=gnu99>)
-target_link_libraries(CANOPEN_LIB PUBLIC SYS_LIB HAL_LIB)
+# 用户自定义驱动 (Drivers/User,一个外设一对 .c/.h)
+file(GLOB USER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/Drivers/User/*.c)
 
 # ==============================================================================
 # 可执行文件
 # ==============================================================================
-add_executable(${PROJECT_NAME}.elf ${USER_SOURCES})
+add_executable(${PROJECT_NAME}.elf
+    ${CORE_SOURCES}
+    ${SYSTEM_SOURCES}
+    ${HAL_SOURCES}
+    ${FREERTOS_SOURCES}
+    ${CANOPEN_301_SOURCES}
+    ${CANOPEN_303_SOURCES}
+    ${CANOPEN_304_SOURCES}
+    ${CANOPEN_305_SOURCES}
+    ${CANOPEN_309_SOURCES}
+    ${CANOPEN_EXTRA_SOURCES}
+    ${CANOPEN_STORAGE_SOURCES}
+    ${CANOPEN_MAIN_SOURCES}
+    ${CANOPEN_STM32_SOURCES}
+    ${USER_SOURCES}
+    ${STARTUP_SOURCE}
+)
 
-# 编译选项
+target_include_directories(${PROJECT_NAME}.elf PRIVATE
+    ${CMAKE_SOURCE_DIR}/Core/Inc
+    ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Inc
+    ${CMAKE_SOURCE_DIR}/Drivers/HAL/Inc
+    ${CMAKE_SOURCE_DIR}/Drivers/HAL/Inc/Legacy
+    ${CMAKE_SOURCE_DIR}/Drivers/Middleware/FreeRTOS/Inc
+    ${CMAKE_SOURCE_DIR}/Drivers/Middleware/FreeRTOS/portable
+    ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode
+    ${CMAKE_SOURCE_DIR}/Drivers/Middleware/CANopenNode/CANopenNode_STM32
+    ${CMAKE_SOURCE_DIR}/Drivers/User
+)
+
+target_compile_definitions(${PROJECT_NAME}.elf PRIVATE
+    USE_HAL_DRIVER
+    ${MCU_FAMILY}
+)
+
 target_compile_options(${PROJECT_NAME}.elf PRIVATE
-    ${CPU_FLAGS}
-    ${FPU_FLAGS}
-    -g
+    ${MCU_FLAGS}
     -Wall
     -ffunction-sections
     -fdata-sections
-    -fno-builtin
     $<$<COMPILE_LANGUAGE:C>:-std=gnu99>
-    $<$<COMPILE_LANGUAGE:CXX>:-std=c++11 -fno-exceptions -fno-rtti>
-    $<$<CONFIG:Debug>:-Og>
-    $<$<CONFIG:Release>:-Os>
 )
 
-# 链接库
-target_link_libraries(${PROJECT_NAME}.elf PRIVATE SYS_LIB HAL_LIB CANOPEN_LIB)
-
-# 链接脚本与链接选项
-set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/CMSIS/Start_Linker_SVD/STM32F407XX_FLASH.ld)
-
+# ==============================================================================
+# 链接选项
+# ==============================================================================
 target_link_options(${PROJECT_NAME}.elf PRIVATE
-    ${CPU_FLAGS}
-    ${FPU_FLAGS}
-    -specs=nano.specs
-    -Wl,--gc-sections
-    -Wl,--print-memory-usage
+    ${MCU_FLAGS}
     -T${LINKER_SCRIPT}
-    -Wl,-Map=${PROJECT_NAME}.map,--cref
+    --specs=nano.specs
+    -Wl,--gc-sections
+    -Wl,-Map=${CMAKE_BINARY_DIR}/${PROJECT_NAME}.map
+    -Wl,--print-memory-usage
 )
 
 # ==============================================================================
-# 后处理：生成 .hex 和 .bin
+# 生成 .hex / .bin 并打印体积
 # ==============================================================================
+set(HEX_FILE ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.hex)
+set(BIN_FILE ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.bin)
+
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O ihex   $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}.elf> ${PROJECT_NAME}.bin
-    COMMAND ${CMAKE_SIZE}              $<TARGET_FILE:${PROJECT_NAME}.elf>
-    COMMENT "Generate HEX, BIN and print size info"
+    COMMAND ${CMAKE_OBJCOPY} -O ihex   $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
+    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
+    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${PROJECT_NAME}.elf>
+    COMMENT "Generating ${PROJECT_NAME}.hex / ${PROJECT_NAME}.bin and size report"
 )
