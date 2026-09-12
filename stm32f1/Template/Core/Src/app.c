@@ -24,10 +24,3 @@ void APP_Loop(void)
     delay_ms(500);
 }
 
-/* TIM4 1ms 周期中断回调:硬件定时器 ISR 示例 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if (htim == &htim4) {
-        /* 可在此放置 1ms 周期任务,如软件节拍累加 */
-    }
-}

@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "type": "cortex-debug",
+            "executable": "./build/Debug/MXTemplate.elf",
+            "request": "launch",
+            "gdbPath": "arm-none-eabi-gdb",
+            "servertype": "openocd",
+            "serverpath": "openocd",
+            "device": "STM32F103C8",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "interface": "swd",
+            "preLaunchTask": "Cmake:build",
+        }
+    ]
+}

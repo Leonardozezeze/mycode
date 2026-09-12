@@ -22,7 +22,6 @@ extern "C" {
 #define USART1_RX_PIN      GPIO_PIN_10
 
 /* 句柄集中声明 */
-extern TIM_HandleTypeDef htim4;    /* TIM4, 1ms 中断定时器(F103xB 无 TIM6/7,以 TIM4 替代) */
 extern UART_HandleTypeDef huart1;  /* USART1, 调试串口(printf 重定向目标) */
 
 /* 板级初始化:一次调用完成时钟 + 全部外设初始化 */

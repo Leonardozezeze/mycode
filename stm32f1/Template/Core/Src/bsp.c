@@ -6,12 +6,10 @@
 #include "bsp.h"
 
 /* 句柄定义 */
-TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart1;
 
 static void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_TIM4_Init(void);
 static void MX_USART1_UART_Init(void);
 
 /* 板级初始化:统一入口,按顺序初始化时钟和所有外设 */
@@ -21,7 +19,6 @@ void BSP_Init(void)
     SystemClock_Config();
     delay_init(); /* 使能 DWT 周期计数,驱动 delay_us/delay_ms */
     MX_GPIO_Init();
-    MX_TIM4_Init();
     MX_USART1_UART_Init(); /* 注意:先于 printf 使用(时钟/引脚/NVIC 见 HAL_UART_MspInit) */
 }
 
@@ -101,21 +98,6 @@ static void MX_GPIO_Init(void)
     HAL_GPIO_Init(LED_GPIO_PORT, &GPIO_InitStruct);
 }
 
-/* TIM4 通用定时器,1ms 周期中断:定时器时钟 2*PCLK1=72MHz,
- * Prescaler=71 -> 1MHz, Period=999 -> 1ms */
-static void MX_TIM4_Init(void)
-{
-    htim4.Instance               = TIM4;
-    htim4.Init.Prescaler         = 71;
-    htim4.Init.CounterMode       = TIM_COUNTERMODE_UP;
-    htim4.Init.Period            = 999;
-    htim4.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
-    htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    if (HAL_TIM_Base_Init(&htim4) != HAL_OK) {
-        Error_Handler();
-    }
-    HAL_TIM_Base_Start_IT(&htim4);   /* 启动 1ms 周期中断,驱动 HAL_TIM_PeriodElapsedCallback */
-}
 
 /* USART1 调试串口:115200-8-N-1(USART1 挂在 APB2=72MHz)。
  * 时钟使能 / PA9-PA10 引脚配置 / NVIC 均在 HAL_UART_MspInit(见 stm32f1xx_hal_msp.c)。 */
