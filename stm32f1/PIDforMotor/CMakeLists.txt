@@ -75,7 +75,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 # ------------------------------------------------------------------
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
     --specs=nosys.specs
-    -u _printf_float
+    # -u _printf_float
     -Wl,--gc-sections
     -Wl,--print-memory-usage
 )

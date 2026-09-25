@@ -4,11 +4,13 @@
  */
 
 #include "bsp.h"
-uint8_t rx_byte;
+#include "ringbuf.h"
+static ringbuf_t g_rx;
 /* 板级初始化 */
 void BSP_Init(void)
 {
     delay_init();
+    ringbuf_init(&g_rx);
     HAL_UART_Receive_IT(&huart1, &rx_byte, 1);
 }
 /* ==============================================================================
@@ -57,7 +59,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == USART1)
     {
-        /* 处理 rx_byte */
+        ringbuf_push(&g_rx, rx_byte);              /* 只塞缓冲 */
         HAL_UART_Receive_IT(&huart1, &rx_byte, 1); /* 重新武装 */
     }
 }
