@@ -5,7 +5,7 @@
 
 #include "bsp.h"
 #include "ringbuf.h"
-static ringbuf_t g_rx;
+uint8_t rx_byte;
 /* 板级初始化 */
 void BSP_Init(void)
 {

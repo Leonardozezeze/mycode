@@ -1,4 +1,5 @@
 #include "ringbuf.h"
+ringbuf_t g_rx;
 void ringbuf_init(ringbuf_t *r)
 {
     r->head=r->tail=0;

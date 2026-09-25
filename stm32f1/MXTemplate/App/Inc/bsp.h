@@ -12,6 +12,7 @@ extern "C" {
 
 #include "main.h"
 #include <stdio.h>
+#include "ringbuf.h"
 /* 板载 LED:PC13(低电平点亮,如 Blue Pill) */
 #define LED_GPIO_PORT   GPIOC
 #define LED_GPIO_PIN    GPIO_PIN_13
@@ -23,7 +24,6 @@ extern "C" {
 
 /* 声明 */
 extern UART_HandleTypeDef huart1;  /* USART1, 调试串口(printf 重定向目标) */
-extern uint8_t rx_byte;
 
 /* 板级初始化:一次调用完成时钟 + 全部外设初始化 */
 void BSP_Init(void);

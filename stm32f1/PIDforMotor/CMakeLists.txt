@@ -12,6 +12,11 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
+# C++ 支持
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+
 
 # Define the build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -28,8 +33,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 project(${CMAKE_PROJECT_NAME})
 message("Build type: " ${CMAKE_BUILD_TYPE})
 
-# Enable CMake support for ASM and C languages
-enable_language(C ASM)
+# Enable CMake support for ASM, C and CXX languages
+enable_language(C CXX ASM)
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME})
@@ -75,7 +80,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 # ------------------------------------------------------------------
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
     --specs=nosys.specs
-    # -u _printf_float
+    -u _printf_float
     -Wl,--gc-sections
     -Wl,--print-memory-usage
 )

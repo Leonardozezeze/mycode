@@ -1,8 +1,9 @@
-# App 模块：自动收集 Src 下的所有 .c 文件
+# App 模块：自动收集 Src 下的所有 .c / .cpp 文件
 
-# 递归收集源文件
+# 递归收集源文件（C 和 C++）
 file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/Src/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Src/*.cpp"
 )
 
 # 把源文件加到顶层可执行目标

@@ -24,8 +24,6 @@ extern "C" {
 
 /* 声明 */
 extern UART_HandleTypeDef huart1;  /* USART1, 调试串口(printf 重定向目标) */
-extern uint8_t rx_byte;
-extern ringbuf_t g_rx;
 
 /* 板级初始化:一次调用完成时钟 + 全部外设初始化 */
 void BSP_Init(void);

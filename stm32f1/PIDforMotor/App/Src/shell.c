@@ -107,6 +107,7 @@ void shell_init(void)
 {
     g_ncmds = 0;
     len = 0;
+    setbuf(stdout, NULL); /* 禁用 stdout 缓冲，实现即时回显 */
     shell_puts(PROMPT);
 }
 

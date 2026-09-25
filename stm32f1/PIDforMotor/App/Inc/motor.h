@@ -1,7 +1,13 @@
 #ifndef __MOTOR_H
 #define __MOTOR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "main.h" // 包含 HAL 库和 CubeMX 生成的定义
+
+#define MOTOR_PWM_MAX 1000 // 对应 ARR+1
 
 /* 电机方向枚举 */
 typedef enum
@@ -34,5 +40,9 @@ void Motor_Brake(void);
 /* 使能/失能芯片 */
 void Motor_Enable(void);
 void Motor_Disable(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef __ENCODER_H
 #define __ENCODER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "main.h"
 
 /* 编码器参数：JGA25370 */
@@ -52,5 +56,9 @@ void Encoder_Reset(void);
 
 /* 设置累计计数值（用于多圈定位） */
 void Encoder_SetTotalCount(int32_t count);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

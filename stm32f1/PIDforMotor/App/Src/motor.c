@@ -1,6 +1,4 @@
 #include "motor.h"
-#include "shell.h"
-#include "pid.h"
 /* 根据你的 CubeMX 配置修改以下宏 */
 extern TIM_HandleTypeDef htim3; // PWM 定时器
 
@@ -18,10 +16,6 @@ extern TIM_HandleTypeDef htim3; // PWM 定时器
  */
 // #define MOTOR_STBY_PORT    GPIOA
 // #define MOTOR_STBY_PIN     GPIO_PIN_6
-
-#define MOTOR_PWM_MAX 1000 // 对应 ARR+1
-#define PID_DELAYMS 10
-static int target_rpm=40;
 
 /* ---------- 内部函数 ---------- */
 static void Motor_SetPWM(uint16_t pwm)
@@ -44,16 +38,7 @@ static void Motor_SetDirection(Motor_Dir_t dir)
         HAL_GPIO_WritePin(MOTOR_AIN2_PORT, MOTOR_AIN2_PIN, GPIO_PIN_SET);
     }
 }
-static int cmd_motor(int argc, char **argv)
-{
-    if (argc < 2)
-    {
-        shell_puts("usage: motor <speed>\r\n");
-        return -1;
-    }
-    /* ... */
-    return 0;
-}
+
 /* ---------- 对外接口 ---------- */
 void Motor_Init(void)
 {
@@ -122,9 +107,4 @@ void Motor_Set(int16_t speed)
     {
         Motor_Stop();
     }
-}
-
-void motor_cli_register(void)
-{
-    shell_register("motor", cmd_motor, "motor <speed>");
 }
