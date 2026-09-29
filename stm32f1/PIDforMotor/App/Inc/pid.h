@@ -8,6 +8,7 @@ class PID {
     float e = 0, e_last = 0, e_prev = 0;
     float out = 0;
     float out_min, out_max;
+    uint8_t status=0;
 public:
     PID() : Kp(0), Ki(0), Kd(0), out_min(0), out_max(0) {}
 
@@ -42,6 +43,9 @@ public:
     float getTarget() const { return target; }
     float getActual() const { return actual; }
     float getOutput() const { return out; }
+    void enable() { status = 1; }
+    void disable() { status = 0; }
+    uint8_t getStatus() { return status; }
 };
 
 #endif

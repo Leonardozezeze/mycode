@@ -22,6 +22,20 @@ extern "C" {
 /* 静止超时（ms）：超过此时间没有新脉冲则判为 0 RPM */
 #define ENCODER_STOP_TIMEOUT_MS 300
 
+/* ---------- 测速方法配置 ---------- */
+/* 测速模式选择 */
+typedef enum {
+    ENCODER_SPEED_MODE_M = 0,  // 测频法（M法）：固定时间计数，适合高速
+    ENCODER_SPEED_MODE_T = 1,  // 测周法（T法）：测量脉冲间隔，适合低速
+    ENCODER_SPEED_MODE_AUTO = 2 // 自动切换：根据速度自动选择
+} Encoder_SpeedMode_t;
+
+/* 自动切换阈值：当测频法计数小于此值时切换到测周法 */
+#define ENCODER_AUTO_SWITCH_THRESHOLD 5
+
+/* 测周法最大脉冲间隔（ms）：超过此时间认为停止 */
+#define ENCODER_T_METHOD_MAX_INTERVAL_MS 500
+
 /* ---------- 初始化 ---------- */
 void Encoder_Init(void);
 
@@ -48,6 +62,30 @@ float Encoder_GetSpeedRPM(uint32_t dt_ms);
 /* 读转速原始值（未滤波），调试用
  * dt_ms：距上次调用的时间（毫秒） */
 float Encoder_GetSpeedRPM_Raw(uint32_t dt_ms);
+
+/* ---------- 测频法（M法） ---------- */
+/* 测频法测速：固定时间内计数脉冲数
+ * dt_ms：采样时间（毫秒），建议 10~100ms
+ * 返回：输出轴转速 RPM，正数正转、负数反转 */
+float Encoder_GetSpeedRPM_M(uint32_t dt_ms);
+
+/* ---------- 测周法（T法） ---------- */
+/* 测周法测速：测量脉冲间隔时间
+ * 返回：输出轴转速 RPM，正数正转、负数反转
+ * 注意：需要定期调用以更新状态 */
+float Encoder_GetSpeedRPM_T(void);
+
+/* ---------- 自动切换（M/T法） ---------- */
+/* 自动切换测速：高速用测频法，低速用测周法
+ * dt_ms：采样时间（毫秒），用于测频法部分
+ * 返回：输出轴转速 RPM */
+float Encoder_GetSpeedRPM_MT(uint32_t dt_ms);
+
+/* 设置测速模式 */
+void Encoder_SetSpeedMode(Encoder_SpeedMode_t mode);
+
+/* 获取当前测速模式 */
+Encoder_SpeedMode_t Encoder_GetSpeedMode(void);
 
 /* ---------- 辅助 ---------- */
 
