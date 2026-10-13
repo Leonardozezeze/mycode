@@ -17,7 +17,7 @@ void App_Init(void)
     BSP_Init();
     Motor_Init();
     Encoder_Init();
-    Motor_Set(pwm);
+    Motor_Set((int16_t)pwm);
     motor_pid.init(0.1, 0.1, 0, 0, 1000);
     printf("App init done\r\n");
     shell_init();
