@@ -67,10 +67,10 @@ static int motor_pid_status(int argc, char **argv)
     }
     if(strcmp(argv[2],"status")==0)
     {
-        printf("pid status:%s", motor_pid.getStatus() ? "able" : "disable");
-        printf("target: %.2f\r\n", motor_pid.getTarget());
-        printf("actual: %.2f\r\n", motor_pid.getActual());
-        printf("output: %.2f\r\n", motor_pid.getOutput());
+        printf("pid status:%s\r\n", motor_pid.getStatus() ? "able" : "disable");
+        printf("target: %.2f \r\n", motor_pid.getTarget());
+        printf("actual: %.2f \r\n", motor_pid.getActual());
+        printf("output: %.2f \r\n", motor_pid.getOutput());
     }
     else if (strcmp(argv[2], "on")==0)
     {
@@ -79,6 +79,7 @@ static int motor_pid_status(int argc, char **argv)
     else if (strcmp(argv[2], "off") == 0)
     {
         motor_pid.disable();
+        motor_pid.reset();
     }
     else{
         shell_puts("unknown subcommand\r\n");

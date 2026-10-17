@@ -32,8 +32,11 @@ void App_Loop(void)
     {
         shell_feed((char)c);
     }
-    // pwm = motor_pid.compute();
-    // Motor_Set(pwm);
-    // uint16_t rpm = Encoder_GetSpeedRPM(1);
-    // motor_pid.setActual(rpm);
+    if (motor_pid.getStatus()) {
+        pwm = motor_pid.compute();
+        Motor_Set(pwm);
+        uint16_t rpm = Encoder_GetSpeedRPM(1);
+        motor_pid.setActual(rpm);
+        delay_ms(1);
+    }
 }
