@@ -48,6 +48,19 @@ void delay_ms(uint32_t ms)
     }
 }
 
+/* ---------- DWT 周期计数助手 ----------
+ * 只读消费 CYCCNT,与 delay_us 的忙等互不干扰。
+ * 传"差值"而非绝对值:无符号减法自动处理 32 位回绕(25.6s @168MHz)。 */
+uint32_t bsp_cycle_count(void)
+{
+    return DWT->CYCCNT;
+}
+
+uint32_t bsp_cycles_to_us(uint32_t cycles)
+{
+    return cycles / s_ticks_per_us;
+}
+
 int __io_putchar(int ch)
 {
     uint8_t c = (uint8_t)ch;

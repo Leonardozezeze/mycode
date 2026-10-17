@@ -1,42 +1,31 @@
 #include "app.h"
 #include "motor.h"
-#include "encoder.h"
-#include "pid.h"
+#include "encoder.h" /* Encoder_Init() */
+#include "control.h" /* 含 pid.h;extern PID motor_pid 定义在 control.cpp */
 #include "shell.h"
 #include "cli_motor.h"
 
-PID motor_pid;
-uint16_t pwm = 0;
-
-/* ========== 私有变量 ========== */
-
-
 /* ========== 初始化 ========== */
 void App_Init(void)
-{ 
-    BSP_Init();
-    Motor_Init();
-    Encoder_Init();
-    Motor_Set((int16_t)pwm);
-    motor_pid.init(0.1, 0.1, 0, 0, 1000);
+{
+    BSP_Init();     /* 使能 DWT 时基(delay_init)+ 串口接收 */
+    Motor_Init();   /* PWM 就绪,电机停止 */
+    Encoder_Init(); /* TIM2 编码器启动,测速窗口同步 */
+    motor_pid.init(0.1f, 1.0f, 0.0f, -1000.0f, 1000.0f);
+
+    Control_Init(); /* 最后一步:武装 TIM6 10ms 控制中断 */
+
     printf("App init done\r\n");
     shell_init();
     motor_cli_register();
 }
 
-/* ========== 主循环 ========== */
+/* ========== 主循环(只剩 shell;控制全部在 TIM6 中断里) ========== */
 void App_Loop(void)
 {
     int c = ringbuf_pop(&g_rx);
     if (c >= 0)
     {
         shell_feed((char)c);
-    }
-    if (motor_pid.getStatus()) {
-        pwm = motor_pid.compute();
-        Motor_Set(pwm);
-        uint16_t rpm = Encoder_GetSpeedRPM(1);
-        motor_pid.setActual(rpm);
-        delay_ms(1);
     }
 }

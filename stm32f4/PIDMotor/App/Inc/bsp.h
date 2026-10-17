@@ -35,6 +35,13 @@ void delay_init(void);
 void delay_us(uint32_t us);
 void delay_ms(uint32_t ms);
 
+/* DWT 周期计数助手(供内部时基使用,如编码器测速)
+ * 用法:t1 = bsp_cycle_count(); ... t2 = bsp_cycle_count();
+ *       us = bsp_cycles_to_us(t2 - t1);   ← 无符号减法,25.6s 内回绕安全
+ * 注意:必须先经 BSP_Init/delay_init 使能 CYCCNT */
+uint32_t bsp_cycle_count(void);             /* 原始 DWT->CYCCNT 快照 */
+uint32_t bsp_cycles_to_us(uint32_t cycles); /* 周期"差值"换算为 µs */
+
 #ifdef __cplusplus
 }
 #endif
