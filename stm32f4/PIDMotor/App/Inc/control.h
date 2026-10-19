@@ -18,12 +18,17 @@ extern "C" {
 /* CubeMX 在 main.c 定义 htim6,但 main.h 不导出句柄(htim2/htim3 同样如此,
  * 参见 encoder.c 的 extern 模式)。此处声明放在 extern "C" 块内,C/C++ 均可用 */
 extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim7;
 
 #define CONTROL_PERIOD_MS 10 /* TIM6 中断周期,与 CubeMX 配置一致 */
+#define SHELL_PERIOD_MS 10   /* TIM7 中断周期,串口输入处理 */
 
-/* 武装 10ms 控制中断 —— 必须在 App_Init 的最后一步调用
+/* 武装 10ms 控制中断(TIM6) —— 必须在 App_Init 的最后一步调用
  * (依赖 BSP_Init 的 DWT、Encoder_Init、motor_pid.init 均已就绪) */
 void Control_Init(void);
+
+/* 武装 10ms 串口输入处理中断(TIM7) */
+void Shell_Init_IT(void);
 
 /* 最后实际写入电机的 PWM 占空比(0~1000,PID 输出或 CLI 手动直驱) */
 int16_t Control_GetPWM(void);

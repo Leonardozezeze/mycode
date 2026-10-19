@@ -43,22 +43,6 @@ static int motor_pwm(int argc, char **argv)
     return 0;
 }
 
-/* motor speed <rpm> */
-static int motor_speed(int argc, char **argv)
-{
-    if (argc < 3) {
-        shell_puts("usage: motor speed <rpm>\r\n");
-        return -1;
-    }
-    long rpm;
-    if (parse_int(argv[2], &rpm) < 0) {
-        shell_puts("bad number\r\n");
-        return -1;
-    }
-    motor_pid.setTarget((float)rpm); /* 单个对齐 float 存储,CM4 上原子,无需临界区 */
-    shell_puts("ok\r\n");
-    return 0;
-}
 
 /* motor status — 实际 PWM + 实测转速 + PID 状态
  * 各字段是对 ISR 更新变量的独立原子读(可能跨相邻 10ms 拍),显示足够 */
@@ -82,24 +66,40 @@ static int motor_enc(int argc, char **argv)
     return 0;
 }
 
-/* motor pid — 显示 PID 当前状态 */
+/* 辅助：解析浮点数 */
+static int parse_float(const char *s, float *out)
+{
+    char *end;
+    float v = strtof(s, &end);
+    if (*end || end == s)
+        return -1;
+    *out = v;
+    return 0;
+}
+
+/* motor pid — PID 参数配置与状态控制 */
 static int motor_pid_status(int argc, char **argv)
 {
     if (argc < 3)
     {
-        shell_puts("usage: motor pid <status/on/off>\r\n");
+        shell_puts("usage: motor pid <status/on/off/set/speed> [args...]\r\n");
         return -1;
     }
+
     if(strcmp(argv[2],"status")==0)
     {
-        printf("pid status:%s\r\n", motor_pid.getStatus() ? "able" : "disable");
-        printf("target: %.2f \r\n", motor_pid.getTarget());
-        printf("actual: %.2f \r\n", motor_pid.getActual());
-        printf("output: %.2f \r\n", motor_pid.getOutput());
+        printf("PID: %s\r\n", motor_pid.getStatus() ? "ON" : "OFF");
+        printf("Kp: %.4f  Ki: %.4f  Kd: %.4f\r\n",
+               motor_pid.getKp(), motor_pid.getKi(), motor_pid.getKd());
+        printf("Target: %.2f RPM  Actual: %.2f RPM\r\n",
+               motor_pid.getTarget(), motor_pid.getActual());
+        printf("Output: %.2f  PWM: %d/%d\r\n",
+               motor_pid.getOutput(), (int)Control_GetPWM(), MOTOR_PWM_MAX);
     }
     else if (strcmp(argv[2], "on")==0)
     {
         motor_pid.enable(); /* 单字节存储,原子,无需临界区 */
+        shell_puts("PID enabled\r\n");
     }
     else if (strcmp(argv[2], "off") == 0)
     {
@@ -108,6 +108,48 @@ static int motor_pid_status(int argc, char **argv)
         motor_pid.disable();
         motor_pid.reset();
         Control_Unlock();
+        shell_puts("PID disabled\r\n");
+    }
+    else if (strcmp(argv[2], "set") == 0)
+    {
+        if (argc < 6)
+        {
+            shell_puts("usage: motor pid set <kp> <ki> <kd>\r\n");
+            return -1;
+        }
+
+        float kp, ki, kd;
+        if (parse_float(argv[3], &kp) < 0 ||
+            parse_float(argv[4], &ki) < 0 ||
+            parse_float(argv[5], &kd) < 0)
+        {
+            shell_puts("bad number\r\n");
+            return -1;
+        }
+
+        Control_Lock();  // 屏蔽中断,防止 ISR 读到中间状态
+        motor_pid.setPID(kp, ki, kd);
+        motor_pid.reset();  // 切换参数后清零历史,避免扰动
+        Control_Unlock();
+
+        printf("PID updated: Kp=%.4f Ki=%.4f Kd=%.4f\r\n", kp, ki, kd);
+    }
+    else if (strcmp(argv[2], "speed") == 0)
+    {
+        if (argc < 4)
+        {
+            shell_puts("usage: motor pid speed <rpm>\r\n");
+            return -1;
+        }
+
+        long rpm;
+        if (parse_int(argv[3], &rpm) < 0) {
+            shell_puts("bad number\r\n");
+            return -1;
+        }
+
+        motor_pid.setTarget((float)rpm); /* 单个对齐 float 存储,CM4 上原子,无需临界区 */
+        shell_puts("ok\r\n");
     }
     else{
         shell_puts("unknown subcommand\r\n");
@@ -120,14 +162,12 @@ static int motor_pid_status(int argc, char **argv)
 static int cmd_motor(int argc, char **argv)
 {
     if (argc < 2) {
-        shell_puts("usage: motor <pwm|speed|status|enc|pid> [args...]\r\n");
+        shell_puts("usage: motor <pwm|status|enc|pid> [args...]\r\n");
         return -1;
     }
 
     if (strcmp(argv[1], "pwm") == 0)
         return motor_pwm(argc, argv);
-    if (strcmp(argv[1], "speed") == 0)
-        return motor_speed(argc, argv);
     if (strcmp(argv[1], "status") == 0)
         return motor_status(argc, argv);
     if (strcmp(argv[1], "enc") == 0)
@@ -142,5 +182,5 @@ static int cmd_motor(int argc, char **argv)
 /* 注册函数 */
 void motor_cli_register(void)
 {
-    shell_register("motor", cmd_motor, "motor <pwm|speed|status|enc|pid> [args]");
+    shell_register("motor", cmd_motor, "motor <pwm|status|enc|pid>  (pid: status|on|off|set <kp> <ki> <kd>|speed <rpm>)");
 }

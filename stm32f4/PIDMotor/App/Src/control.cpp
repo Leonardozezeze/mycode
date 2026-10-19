@@ -18,6 +18,8 @@
 #include "control.h"
 #include "encoder.h"
 #include "motor.h"
+#include "ringbuf.h"
+#include "shell.h"
 
 /* 全局 PID 实例(从 app.cpp 迁入):控制中断与 CLI 共享同一对象 */
 PID motor_pid;
@@ -32,6 +34,13 @@ void Control_Init(void)
      * 避免上电残留标志导致武装后立即多进一次中断 */
     __HAL_TIM_CLEAR_FLAG(&htim6, TIM_FLAG_UPDATE);
     HAL_TIM_Base_Start_IT(&htim6);
+}
+
+/* ---------- 武装串口输入处理中断(TIM7) ---------- */
+void Shell_Init_IT(void)
+{
+    __HAL_TIM_CLEAR_FLAG(&htim7, TIM_FLAG_UPDATE);
+    HAL_TIM_Base_Start_IT(&htim7);
 }
 
 /* ---------- PWM 缓存读写 ---------- */
@@ -57,11 +66,9 @@ void Control_Unlock(void)
     HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 }
 
-/* ---------- 10ms 控制任务(中断上下文) ---------- */
-static void Control_Task10ms(void)
+/* ---------- 控制任务(中断上下文) ---------- */
+static void Control_Task(void) //10ms
 {
-    /* 无论 PID 是否开启都更新测速:
-     * CLI 的 motor status 随时有活数据;重新使能 PID 前窗口已同步 */
     Encoder_Update();
 
     uint8_t en = motor_pid.getStatus();
@@ -87,5 +94,14 @@ static void Control_Task10ms(void)
 extern "C" void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM6)
-        Control_Task10ms();
+        Control_Task();
+    else if (htim->Instance == TIM7)
+    {
+        /* 串口输入处理任务(10ms 周期) */
+        int c = ringbuf_pop(&g_rx);
+        if (c >= 0)
+        {
+            shell_feed((char)c);
+        }
+    }
 }

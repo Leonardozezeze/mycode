@@ -1,14 +1,18 @@
 #ifndef __PID_H
 #define __PID_H
+
 #include <stdint.h>
+
 class PID {
+private:
     float Kp, Ki, Kd;
     float target = 0;
     float actual = 0;
-    float e = 0, e_last = 0, e_prev = 0;
+    float e_last = 0, e_prev = 0;  // 去掉 e，直接用局部变量
     float out = 0;
     float out_min, out_max;
-    uint8_t status=0;
+    uint8_t status = 0;
+
 public:
     PID() : Kp(0), Ki(0), Kd(0), out_min(0), out_max(0) {}
 
@@ -18,34 +22,51 @@ public:
         reset();
     }
 
+    // 重新配置 PID 参数（运行时调整）
+    void setPID(float kp, float ki, float kd) {
+        Kp = kp; Ki = ki; Kd = kd;
+    }
+
+    // 获取 PID 参数
+    float getKp() const { return Kp; }
+    float getKi() const { return Ki; }
+    float getKd() const { return Kd; }
+
     float compute() {
-        e = target - actual;
+        float e = target - actual;
+
+        // 增量式 PID: delta = Kp*(e-e_last) + Ki*e + Kd*(e-2*e_last+e_prev)
         float delta = Kp * (e - e_last)
                     + Ki * e
                     + Kd * (e - 2.0f * e_last + e_prev);
         out += delta;
 
+        // 输出限幅
         if (out > out_max) out = out_max;
         if (out < out_min) out = out_min;
 
+        // 更新历史误差
         e_prev = e_last;
         e_last = e;
         return out;
     }
 
     void reset() {
-        e = e_last = e_prev = 0;
+        e_last = 0;
+        e_prev = 0;
         out = 0;
     }
 
     void setTarget(float v) { target = v; }
     void setActual(float v) { actual = v; }
+
     float getTarget() const { return target; }
     float getActual() const { return actual; }
     float getOutput() const { return out; }
+
     void enable() { status = 1; }
     void disable() { status = 0; }
-    uint8_t getStatus() { return status; }
+    uint8_t getStatus() const { return status; }
 };
 
 #endif
