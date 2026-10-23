@@ -34,6 +34,7 @@ void Shell_Init_IT(void);
 int16_t Control_GetPWM(void);
 
 /* 手动直驱:Motor_Set + 更新缓存。仅在 PID 关闭时使用(CLI 侧负责守卫,
+
  * 否则 10ms 内就会被控制中断覆盖) */
 void Control_SetPWM(int16_t v);
 

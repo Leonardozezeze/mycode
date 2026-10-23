@@ -26,9 +26,19 @@ extern "C" {
 
 /* 声明 */
 extern UART_HandleTypeDef huart1;  /* USART1, 调试串口(printf 重定向目标) */
+extern UART_HandleTypeDef huart4;  /* UART4, 第二个串口 */
 
 /* 板级初始化:一次调用完成时钟 + 全部外设初始化 */
 void BSP_Init(void);
+
+/* Shell 实例相关(在 bsp.cpp 里定义) */
+#ifdef __cplusplus
+#include "shell.h"
+extern RingBuffer g_rx_uart1;
+extern RingBuffer g_rx_uart4;
+extern Shell g_shell_uart1;
+extern Shell g_shell_uart4;
+#endif
 
 /* 延时:基于 DWT 周期计数,由 BSP_Init 自动调用 delay_init() 使能 */
 void delay_init(void);

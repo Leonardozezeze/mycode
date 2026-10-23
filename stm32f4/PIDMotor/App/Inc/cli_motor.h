@@ -1,12 +1,13 @@
 #ifndef __CLI_MOTOR
 #define __CLI_MOTOR
-#include "shell.h"
 
 #ifdef __cplusplus
+#include "shell.h"
 extern "C" {
 #endif
 
-void motor_cli_register(void);
+// 注册 motor 命令到指定的 Shell 实例
+void motor_cli_register(Shell* shell);
 
 #ifdef __cplusplus
 }

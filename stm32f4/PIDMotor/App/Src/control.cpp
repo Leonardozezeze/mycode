@@ -98,10 +98,10 @@ extern "C" void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     else if (htim->Instance == TIM7)
     {
         /* 串口输入处理任务(10ms 周期) */
-        int c = ringbuf_pop(&g_rx);
-        if (c >= 0)
-        {
-            shell_feed((char)c);
-        }
+        // 处理 UART1 输入
+        g_shell_uart1.process_input();
+
+        // 处理 UART4 输入
+        g_shell_uart4.process_input();
     }
 }

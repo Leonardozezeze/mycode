@@ -9,7 +9,7 @@
 /* ========== 初始化 ========== */
 void App_Init(void)
 {
-    BSP_Init();     /* 使能 DWT 时基(delay_init)+ 串口接收 */
+    BSP_Init();     /* 使能 DWT 时基(delay_init)+ 串口接收 + Shell 实例静态构造 */
     Motor_Init();   /* PWM 就绪,电机停止 */
     Encoder_Init(); /* TIM2 编码器启动,测速窗口同步 */
     motor_pid.init(0.08f, 0.04f, 0.0f, -1000.0f, 1000.0f);
@@ -18,12 +18,15 @@ void App_Init(void)
     Shell_Init_IT(); /* 武装 TIM7 10ms 串口输入处理中断 */
 
     printf("App init done\r\n");
-    shell_init();
-    motor_cli_register();
+
+    // 注册命令到两个 Shell 实例
+    motor_cli_register(&g_shell_uart1);
+    motor_cli_register(&g_shell_uart4);
 }
 
 /* ========== 主循环 ========== */
 void App_Loop(void)
 {
-
+    // 如果需要轮询处理,可以在这里添加
+    // 但目前输入处理在 TIM7 中断里完成(10ms 周期)
 }

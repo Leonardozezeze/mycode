@@ -23,8 +23,12 @@ if [ ! -d "${TEMPLATE_DIR}" ]; then
     exit 1
 fi
 
-# 获取用户输入并验证
-read -p "请输入新项目名称：" projname
+# 获取项目名称（优先使用命令行参数）
+if [ $# -ge 1 ]; then
+    projname="$1"
+else
+    read -p "请输入新项目名称：" projname
+fi
 
 # 检查输入是否为空
 if [ -z "${projname}" ]; then
@@ -65,15 +69,12 @@ cd "${TARGET_DIR}"
 
 # 复制并重命名 .ioc 文件
 echo "正在配置项目文件..."
-cp "MXTemplate.ioc" "${projname}.ioc"
+mv "MXTemplate.ioc" "${projname}.ioc"
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}错误：复制 .ioc 文件失败${NC}"
+    echo -e "${RED}错误：更名 .ioc 文件失败${NC}"
     exit 1
 fi
-
-# 删除原始的模板 .ioc 文件
-rm -f "MXTemplate.ioc"
 
 # 更新 .mxproject 文件中的项目名称（如果存在）
 if [ -f ".mxproject" ]; then
@@ -91,6 +92,12 @@ fi
 # 更新 CMakePresets.json 中的项目名称（如果存在）
 if [ -f "CMakePresets.json" ]; then
     sed -i "s/MXTemplate/${projname}/g" "CMakePresets.json"
+fi
+
+# 清理旧的构建目录
+if [ -d "build" ]; then
+    echo "清理旧的构建目录..."
+    rm -rf build
 fi
 
 echo -e "${GREEN}✓ 项目 '${projname}' 创建成功！${NC}"
