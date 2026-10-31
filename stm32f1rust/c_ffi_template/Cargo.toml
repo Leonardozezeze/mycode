@@ -1,0 +1,11 @@
+[package]
+name = "c_ffi_template"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+panic-halt = "*"
+
+# 如果使用 embassy，可以启用以下依赖
+# embassy-stm32 = { version = "0.2", features = ["defmt", "stm32f103c8", "memory-medium", "time-driver-any"] }
+# embassy-time = { version = "0.4", features = ["defmt", "defmt-timestamp-uptime"] }

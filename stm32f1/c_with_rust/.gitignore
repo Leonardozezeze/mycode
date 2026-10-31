@@ -1,0 +1,5 @@
+# CMake 构建产物
+build/
+
+# Cargo 构建产物（rust-analyzer / 手动 cargo build 产生）
+rust/target/

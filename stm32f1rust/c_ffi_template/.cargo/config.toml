@@ -1,0 +1,11 @@
+[build]
+target = "thumbv7m-none-eabi"
+
+# 主机端单元测试：MCU target 没有 libtest，测试要在主机上跑
+[alias]
+test-host = "test --target x86_64-unknown-linux-gnu"
+
+[target.thumbv7m-none-eabi]
+# 链接脚本、--specs、静态库等链接参数全部由 build.rs 提供，这里只保留工具链和运行器
+linker = "arm-none-eabi-gcc"
+runner = "probe-rs run --chip STM32F103C8"

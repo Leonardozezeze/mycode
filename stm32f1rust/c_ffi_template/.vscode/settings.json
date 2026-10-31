@@ -1,0 +1,12 @@
+{
+    "cmake.sourceDirectory": "/home/cassian/mycode/stm32f1rust/${workspaceFolderBasename}/c_src",
+    // no_std 固件：rust-analyzer 检查当前 target（thumbv7m）即可，不要 --all-targets
+    "rust-analyzer.cargo.allTargets": false,
+    // 让 IDE 的 Run Test / CodeLens 生成的 cargo 命令带上主机 target。
+    // 注意：该设置对 runnable（测试和 cargo run）都生效，
+    // 固件烧录请继续走 .vscode/launch.json 的 cortex-debug。
+    "rust-analyzer.runnables.extraArgs": [
+        "--target",
+        "x86_64-unknown-linux-gnu"
+    ]
+}

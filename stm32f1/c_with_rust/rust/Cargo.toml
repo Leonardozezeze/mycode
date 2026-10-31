@@ -1,0 +1,22 @@
+[package]
+name = "lib_rust"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "rust_upper"
+crate-type = ["staticlib"]   # 只产出 librust_upper.a，不链接
+test = false                 # 关闭单元测试 target（no_std/ARM 下没有 libtest）
+doctest = false
+bench = false
+
+[profile.dev]
+panic = "abort"
+opt-level = 1             # Debug 也开点优化，否则 64K Flash 很容易爆
+debug = 2
+
+[profile.release]
+panic = "abort"
+opt-level = "s"
+lto = true
+codegen-units = 1

@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug (OpenOCD)",
+            "cwd": "${workspaceFolder}",
+            "type": "cortex-debug",
+            "request": "launch",
+            "executable": "${workspaceFolder}/target/thumbv7m-none-eabi/debug/${workspaceFolderBasename}",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
+            ],
+            "runToEntryPoint": "Reset",
+            "interface": "swd",
+            "svdFile": "${workspaceFolder}/STM32F103.svd",
+            "preLaunchTask": "rust: cargo build[MCU]"
+        }
+    ]
+}

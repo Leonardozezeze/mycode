@@ -8,7 +8,7 @@ extern "C" {
 #include "main.h" /* 拿到 HAL 和所有外设句柄的 extern */
 #include "bsp.h"
 void App_Init(void); /* 所有初始化完成后调用一次 */
-void App_Loop(void); /* 主循环里反复调用 */
+void App_Loop(void); 
 
 #ifdef __cplusplus
 }

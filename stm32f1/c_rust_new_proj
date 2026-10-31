@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+# 从 c_with_rust 工程生成一个新工程。
+#
+# 用法:
+#   ./c_rust_new_proj                 # 交互式输入项目名
+#   ./c_rust_new_proj MyBoard         # 生成到脚本同级目录 ./MyBoard
+#   ./c_rust_new_proj MyBoard /path/MyBoard
+#
+# 默认模板目录：脚本同级的 c_with_rust/
+# 可用 SRC_DIR=/path/to/c_with_rust 覆盖。
+#
+# 会做的事:
+#   1. 复制工程（排除 build/、rust/target/、.git/）
+#   2. 把 MXTemplate.ioc 重命名为 <项目名>.ioc
+#   3. 把 CMake 工程名、.ioc 内部项目名、VSCode 的 ELF 路径里的
+#      MXTemplate 统一替换成 <项目名>
+#
+# 不会做的事：git init、编译。生成后按提示构建即可。
+
+set -euo pipefail
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+src_dir=${SRC_DIR:-"$script_dir/c_with_rust"}
+old_name="MXTemplate"
+
+if [ ! -d "$src_dir" ]; then
+    echo "错误: 找不到模板工程: $src_dir" >&2
+    echo "      可用 SRC_DIR=/path/to/c_with_rust 指定" >&2
+    exit 1
+fi
+src_dir=$(cd "$src_dir" && pwd)
+
+# ---------- 项目名 ----------
+if [ $# -ge 1 ]; then
+    name=$1
+else
+    read -rp "项目名称: " name
+fi
+
+if ! [[ $name =~ ^[A-Za-z][A-Za-z0-9_-]*$ ]]; then
+    echo "错误: 项目名只能包含字母、数字、- 和 _，且必须以字母开头: '$name'" >&2
+    exit 1
+fi
+
+dest=${2:-"$script_dir/$name"}
+
+# VSCode 的任务/调试配置按目录名和项目名生成，两者必须一致
+if [ "$(basename "$dest")" != "$name" ]; then
+    echo "错误: 目标目录名必须和项目名一致: $dest" >&2
+    exit 1
+fi
+
+# 防止目标位于源工程内部（tar 复制会自我递归）
+case "$dest" in
+    "$src_dir" | "$src_dir"/*)
+        echo "错误: 目标目录不能位于模板工程内部: $dest" >&2
+        exit 1
+        ;;
+esac
+
+if [ -e "$dest" ]; then
+    echo "错误: 目标已存在: $dest" >&2
+    exit 1
+fi
+
+for f in CMakeLists.txt "$old_name.ioc"; do
+    if [ ! -e "$src_dir/$f" ]; then
+        echo "错误: $src_dir 不是预期的工程目录（缺少 $f）" >&2
+        exit 1
+    fi
+done
+
+echo "模板: $src_dir"
+echo "目标: $dest"
+
+# ---------- 1. 复制 ----------
+mkdir -p "$dest"
+tar -C "$src_dir" \
+    --exclude='./build' \
+    --exclude='./rust/target' \
+    --exclude='./.git' \
+    --exclude='*.orig' \
+    --exclude='*.rej' \
+    -cf - . | tar -C "$dest" -xf -
+
+# ---------- 2. 重命名 .ioc ----------
+ioc=$(find "$dest" -maxdepth 1 -name '*.ioc' -print -quit)
+if [ -n "$ioc" ]; then
+    mv "$ioc" "$dest/$name.ioc"
+fi
+
+# ---------- 3. 替换项目名 ----------
+# -I 跳过二进制文件；只改文本文件里的 MXTemplate
+while IFS= read -r -d '' file; do
+    sed -i "s/$old_name/$name/g" "$file"
+done < <(
+    grep -rlIZ "$old_name" "$dest" \
+        --exclude-dir=build \
+        --exclude-dir=target \
+        --exclude-dir=.git || true
+)
+
+# 校验 CMake 工程名确实替换成功
+if ! grep -q "^set(CMAKE_PROJECT_NAME $name)$" "$dest/CMakeLists.txt"; then
+    echo "错误: 未能替换 CMake 工程名，请检查模板中的 set(CMAKE_PROJECT_NAME ...)" >&2
+    exit 1
+fi
+
+echo
+echo "已生成工程: $dest"
+echo
+echo "下一步:"
+echo "  cd \"$dest\""
+echo "  cmake --preset Debug && cmake --build --preset Debug"
+echo "  # 用 STM32CubeMX 打开 $name.ioc 继续配置外设"
