@@ -29,7 +29,7 @@ pub fn available() -> usize {
 pub fn clear() {
     UART1_RX.clear();
 }
-pub struct UartWriter;
+struct UartWriter;
 impl fmt::Write for UartWriter {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         let len = s.len().min(u16::MAX as usize) as u16;
@@ -45,7 +45,7 @@ pub fn print(args: fmt::Arguments<'_>) {
 #[macro_export]
 macro_rules! u1println {
     ($($arg:tt)*) => {
-        $crate::peripheral::uart::print(
+        $crate::peripheral::uart1::print(
             format_args!("{}\r\n", format_args!($($arg)*))
         )
     };
@@ -53,7 +53,7 @@ macro_rules! u1println {
 #[macro_export]
 macro_rules! u1print {
     ($($arg:tt)*) => {
-        $crate::peripheral::uart::print(
+        $crate::peripheral::uart1::print(
             format_args!("{}", format_args!($($arg)*))
         )
     };

@@ -11,9 +11,11 @@
 #
 # 会做的事:
 #   1. 复制工程（排除 build/、rust/target/、.git/）
-#   2. 把 MXTemplate.ioc 重命名为 <项目名>.ioc
-#   3. 把 CMake 工程名、.ioc 内部项目名、VSCode 的 ELF 路径里的
-#      MXTemplate 统一替换成 <项目名>
+#   2. 把模板里的 .ioc 重命名为 <项目名>.ioc
+#   3. 把 CMake 工程名、.ioc 内部项目名里的模板旧工程名统一替换成
+#      <项目名>（旧工程名从 CMakeLists.txt 的
+#      set(CMAKE_PROJECT_NAME ...) 读取；VSCode 配置用
+#      ${workspaceFolderBasename}，无需替换）
 #
 # 不会做的事：git init、编译。生成后按提示构建即可。
 
@@ -21,7 +23,6 @@ set -euo pipefail
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 src_dir=${SRC_DIR:-"$script_dir/c_with_rust"}
-old_name="MXTemplate"
 
 if [ ! -d "$src_dir" ]; then
     echo "错误: 找不到模板工程: $src_dir" >&2
@@ -63,12 +64,26 @@ if [ -e "$dest" ]; then
     exit 1
 fi
 
-for f in CMakeLists.txt "$old_name.ioc"; do
-    if [ ! -e "$src_dir/$f" ]; then
-        echo "错误: $src_dir 不是预期的工程目录（缺少 $f）" >&2
-        exit 1
-    fi
-done
+if [ ! -f "$src_dir/CMakeLists.txt" ]; then
+    echo "错误: $src_dir 不是预期的工程目录（缺少 CMakeLists.txt）" >&2
+    exit 1
+fi
+
+# 模板里的 .ioc 可能已经被 CubeMX 改过名，不能假设它叫 MXTemplate.ioc
+src_ioc=$(find "$src_dir" -maxdepth 1 -name '*.ioc' -print -quit)
+if [ -z "$src_ioc" ]; then
+    echo "错误: $src_dir 不是预期的工程目录（缺少 .ioc 文件）" >&2
+    exit 1
+fi
+src_ioc_name=$(basename "$src_ioc")
+
+# 旧工程名以 CMakeLists.txt 为准：.ioc 内部和 VSCode 配置里用的也是这个
+old_name=$(sed -n 's/^set(CMAKE_PROJECT_NAME[[:space:]]\{1,\}\(.*\))$/\1/p' \
+    "$src_dir/CMakeLists.txt" | head -n 1)
+if [ -z "$old_name" ]; then
+    echo "错误: 无法从 $src_dir/CMakeLists.txt 读取 set(CMAKE_PROJECT_NAME ...)" >&2
+    exit 1
+fi
 
 echo "模板: $src_dir"
 echo "目标: $dest"

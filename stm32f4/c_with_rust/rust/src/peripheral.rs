@@ -2,4 +2,4 @@
 
 pub mod led;
 pub mod delay;
-pub mod uart;
+pub mod uart1;

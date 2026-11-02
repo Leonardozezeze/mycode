@@ -5,7 +5,7 @@
             "name": "Cortex Debug (OpenOCD)",
             "cwd": "${workspaceFolder}",
             "type": "cortex-debug",
-            "executable": "./build/Debug/MXTemplate.elf",
+            "executable": "./build/Debug/${workspaceFolderBasename}.elf",
             "request": "launch",
             "gdbPath": "arm-none-eabi-gdb",
             "servertype": "openocd",
