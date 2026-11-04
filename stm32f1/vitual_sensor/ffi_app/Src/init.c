@@ -8,4 +8,5 @@ void board_drive_init(void)
     HAL_ADCEx_Calibration_Start(&hadc1);   // 校准adc
     delay_init();
     uart1_rx_start();
+    uart2_rx_start();
 }

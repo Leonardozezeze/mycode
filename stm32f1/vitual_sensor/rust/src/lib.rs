@@ -7,9 +7,9 @@ use core::panic::PanicInfo;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     // 调试时可以在这里放个断点 / 点灯
+    u1println!("{}",_info);
     loop { core::hint::spin_loop(); }
 }
-
 #[unsafe(no_mangle)]
 pub extern "C" fn rust_run() -> ! {
     app::app_init();

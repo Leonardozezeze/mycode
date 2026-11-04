@@ -31,4 +31,14 @@ impl Led {
             board_led_toggle();
         }
     }
+    pub fn toggle_task(&self, now_ms: u32) {
+        static mut LAST_TOGGLE: u32 = 0;
+        const PERIOD_MS: u32 = 500;
+        unsafe {
+            if now_ms.wrapping_sub(LAST_TOGGLE) > PERIOD_MS {
+                LAST_TOGGLE = now_ms;
+                self.toggle();
+            }
+        }
+    }
 }

@@ -1,4 +1,4 @@
-use crate::{peripheral::{self, delay::Delay}, u1println};
+use crate::{peripheral::{self, dwt::DWT}, u1println};
 
 unsafe extern "C"{
     unsafe fn board_drive_init();
@@ -17,7 +17,7 @@ pub fn app_run() -> ! {
     let mut count: u32=0;
     loop {
         led.toggle();
-        Delay::ms(1000);
+        DWT::delay_ms(1000);
         u1println!("led toggle:{}",count);
         count+=1;
     }
