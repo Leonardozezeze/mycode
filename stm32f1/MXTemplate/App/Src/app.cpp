@@ -10,7 +10,6 @@ void App_Init(void)
     BSP_Init();
     printf("App init done\r\n");
 }
-
 /* ========== 主循环 ========== */
 void App_Loop(void)
 {

@@ -1,18 +1,18 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "test1",
+  "productName": "my_first",
   "version": "0.1.0",
-  "identifier": "com.cassian.test1",
+  "identifier": "com.cassian.my_first",
   "build": {
     "beforeDevCommand": "bun run dev",
-    "devUrl": "http://127.0.0.1:1420",
+    "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "bun run build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "test1",
+        "title": "my_first",
         "width": 800,
         "height": 600
       }
