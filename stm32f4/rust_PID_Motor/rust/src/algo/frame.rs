@@ -5,12 +5,11 @@
 //! [0]    = 0xFF       帧头
 //! [1..5] = b: f32     4 字节小端
 //! [5..9] = i: f32     4 字节小端
-//! [9]    = 保留（未用） 以后可作校验字节
-//! [10]   = 0xEE       帧尾
+//! [9]   = 0xEE       帧尾
 //! ```
 //! 校验只靠帧头 `0xFF` + 帧尾 `0xEE`，中间没有校验和。
 
-pub const FRAME_LEN: usize = 11;
+pub const FRAME_LEN: usize = 10;
 pub const FRAME_HEAD: u8 = 0xFF;
 pub const FRAME_TAIL: u8 = 0xEE;
 

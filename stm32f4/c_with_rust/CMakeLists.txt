@@ -117,6 +117,7 @@ target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
     --specs=nosys.specs
     -Wl,--gc-sections
     -Wl,--print-memory-usage
+    -Wl,-z,noexecstack
 )
 
 # ------------------------------------------------------------------

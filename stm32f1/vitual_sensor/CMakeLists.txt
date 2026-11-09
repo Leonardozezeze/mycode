@@ -117,6 +117,10 @@ target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
     --specs=nosys.specs
     -Wl,--gc-sections
     -Wl,--print-memory-usage
+    # Arm 15.3 的 crtn.o 与 GCC 生成的 .obj 都缺 .note.GNU-stack，
+    # 而 Rust 静态库带该 note，ld 2.42+ 便据此判定"需要可执行栈"并告警。
+    # 裸机 Cortex-M 没有加载器/W^X，显式声明不需要可执行栈即可消除告警。
+    -Wl,-z,noexecstack
 )
 
 # ------------------------------------------------------------------
