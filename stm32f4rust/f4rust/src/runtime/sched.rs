@@ -10,7 +10,15 @@ pub struct PeriodicTask {
 impl PeriodicTask {
     /// `last` 从 0 起算：首次触发发生在时基零点（启动）后一个周期。
     pub const fn new(period_ms: u64) -> Self {
-        Self { last: 0, period_ms }
+        Self::new_at(period_ms, 0)
+    }
+
+    /// 从指定时刻起算，适用于需要对齐首次采样基准的任务。
+    pub const fn new_at(period_ms: u64, now_ms: u64) -> Self {
+        Self {
+            last: now_ms,
+            period_ms,
+        }
     }
 
     /// 到点返回 `Some(elapsed)`（距上次触发的实测毫秒数），未到点返回 `None`。

@@ -1,36 +1,40 @@
-//! 256 字节环形缓冲区
-//!
-//! `head` 写指针、`tail` 读指针、`MASK` 取模，
-//! 牺牲一个槽位区分空/满，所以 256 字节缓冲区实际可存 **255 字节**。
-//!
-//! - Rust 没有 `volatile` 语义的共享可变量，这里用 `AtomicUsize` 代替；
-//! - 原子操作同时提供内存序，保证“先写数据、再发布 head”的顺序；
-//! - 方法改为 `&self`，这样可以直接放在 `static` 里被中断和主循环共享；
-//! - `unsafe impl Sync` 成立的前提是 **严格单生产者/单消费者**：
-//!   只有中断里调用 `push`，只有主循环里调用 `pop`。
+//! 单生产者、单消费者环形缓冲区：split() 将操作权限拆成两个独占句柄。
+//! 256 个槽位保留一个区分空/满，因此实际容量为 255 字节。
 
-use core::cell::UnsafeCell;
-use core::sync::atomic::{AtomicUsize, Ordering};
+use core::{
+    cell::{Cell, UnsafeCell},
+    marker::PhantomData,
+    sync::atomic::{AtomicUsize, Ordering},
+};
 
-/// 缓冲区大小，必须是 2 的幂
 pub const CAPACITY: usize = 256;
-
 const MASK: usize = CAPACITY - 1;
-
-// 编译期保证 CAPACITY 是 2 的幂，否则 MASK 取模不成立
-const _: () = assert!(CAPACITY.is_power_of_two());
+const _: () = assert!(CAPACITY >= 2 && CAPACITY.is_power_of_two());
 
 pub struct RingBuffer {
     buf: UnsafeCell<[u8; CAPACITY]>,
-    /// 写入位置，仅生产者（中断）修改
     head: AtomicUsize,
-    /// 读取位置，仅消费者（主循环）修改
     tail: AtomicUsize,
 }
 
-// SAFETY: push/pop 只允许一个生产者、一个消费者并发访问；
-// 生产者只写 head 及其槽位，消费者只写 tail 并读取已发布的槽位。
+// SAFETY: 数据访问只能经由 split 创建的独占 Producer/Consumer。
+// 句柄不可复制且 !Sync，修改要求 &mut self；每种角色最多一个操作者。
+// Release/Acquire 保证槽位写入后才发布，读取完后才允许覆盖。
+// 维护约束：不得新增能通过共享引用写入槽位或修改索引的公共接口，
+// 也不得公开底层存储/原子索引或允许复制、并发操作同一角色的句柄。
 unsafe impl Sync for RingBuffer {}
+
+/// 唯一写入者。可以移动到另一执行上下文，但不能共享引用并发写入。
+pub struct Producer<'a> {
+    buffer: &'a RingBuffer,
+    _not_sync: PhantomData<Cell<()>>,
+}
+
+/// 唯一读取者。可以移动到另一执行上下文，但不能共享引用并发读取。
+pub struct Consumer<'a> {
+    buffer: &'a RingBuffer,
+    _not_sync: PhantomData<Cell<()>>,
+}
 
 impl RingBuffer {
     pub const fn new() -> Self {
@@ -41,72 +45,99 @@ impl RingBuffer {
         }
     }
 
-    /// 推入一个字节（中断里调用）。
-    ///
-    /// 缓冲区满时返回 `false`，该字节被丢弃。
-    pub fn push(&self, byte: u8) -> bool {
-        let head = self.head.load(Ordering::Relaxed);
-        let next = (head + 1) & MASK;
-
-        // Acquire 确保看到消费者已经释放出来的槽位
-        if next == self.tail.load(Ordering::Acquire) {
-            return false;
-        }
-
-        // SAFETY: 该槽位位于 [tail, head] 之外，消费者不会读取
-        unsafe {
-            *self.buf.get().cast::<u8>().add(head) = byte;
-        }
-
-        // Release：先写数据，再发布新的 head
-        self.head.store(next, Ordering::Release);
-        true
-    }
-
-    /// 弹出一个字节（主循环调用）。
-    ///
-    /// 缓冲区为空时返回 `None`。
-    pub fn pop(&self) -> Option<u8> {
-        let tail = self.tail.load(Ordering::Relaxed);
-        let head = self.head.load(Ordering::Acquire);
-
-        if tail == head {
-            return None;
-        }
-
-        // SAFETY: tail != head，说明该槽位的数据已被生产者发布
-        let byte = unsafe { *self.buf.get().cast::<u8>().add(tail) };
-
-        // Release：读走数据后再释放槽位
-        self.tail.store((tail + 1) & MASK, Ordering::Release);
-        Some(byte)
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.tail.load(Ordering::Acquire) == self.head.load(Ordering::Acquire)
-    }
-
-    pub fn is_full(&self) -> bool {
-        let next = (self.head.load(Ordering::Relaxed) + 1) & MASK;
-        next == self.tail.load(Ordering::Acquire)
-    }
-
-    /// 清空缓冲区（仅消费者/主循环调用，丢弃当前所有数据）
-    pub fn clear(&self) {
-        let head = self.head.load(Ordering::Acquire);
-        self.tail.store(head, Ordering::Release);
-    }
-
-    /// 当前可读字节数
-    pub fn len(&self) -> usize {
-        let head = self.head.load(Ordering::Acquire);
-        let tail = self.tail.load(Ordering::Acquire);
-        (head + CAPACITY - tail) & MASK
+    /// 拆出共享同一底层存储的两个句柄，不复制缓冲区。
+    /// 句柄使用期间独占借用整个 RingBuffer，不能再次拆分或移动缓冲区。
+    pub fn split(&mut self) -> (Producer<'_>, Consumer<'_>) {
+        (
+            Producer {
+                buffer: self,
+                _not_sync: PhantomData,
+            },
+            Consumer {
+                buffer: self,
+                _not_sync: PhantomData,
+            },
+        )
     }
 }
 
 impl Default for RingBuffer {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Producer<'_> {
+    /// 推入一个字节；满时返回 false，不改变队列。
+    pub fn push(&mut self, byte: u8) -> bool {
+        self.try_push_slice(core::slice::from_ref(&byte))
+    }
+
+    /// 整批入队；空间不足时返回 false，不写入任何字节。
+    pub fn try_push_slice(&mut self, data: &[u8]) -> bool {
+        if data.is_empty() {
+            return true;
+        }
+        let buffer = self.buffer;
+        let head = buffer.head.load(Ordering::Relaxed);
+        let tail = buffer.tail.load(Ordering::Acquire);
+        let available = (tail + CAPACITY - head - 1) & MASK;
+        if data.len() > available {
+            return false;
+        }
+
+        for (offset, &byte) in data.iter().enumerate() {
+            // SAFETY: 独占 Producer 只写已确认空闲的槽位，Consumer 不会读取这些槽位。
+            unsafe { *buffer.buf.get().cast::<u8>().add((head + offset) & MASK) = byte };
+        }
+        buffer
+            .head
+            .store((head + data.len()) & MASK, Ordering::Release);
+        true
+    }
+
+    /// 满状态的一次观察；消费者可能在返回后立即释放空间。
+    /// 实际能否入队以 push/try_push_slice 的返回值为准。
+    pub fn is_full(&self) -> bool {
+        let next = (self.buffer.head.load(Ordering::Relaxed) + 1) & MASK;
+        next == self.buffer.tail.load(Ordering::Acquire)
+    }
+}
+
+impl Consumer<'_> {
+    pub fn pop(&mut self) -> Option<u8> {
+        let buffer = self.buffer;
+        let tail = buffer.tail.load(Ordering::Relaxed);
+        let head = buffer.head.load(Ordering::Acquire);
+        if tail == head {
+            return None;
+        }
+
+        // SAFETY: 数据已发布，且只有此 Consumer 会读取并释放当前槽位。
+        let byte = unsafe { *buffer.buf.get().cast::<u8>().add(tail) };
+        buffer.tail.store((tail + 1) & MASK, Ordering::Release);
+        Some(byte)
+    }
+
+    /// 空状态的一次观察；生产者可能在返回后立即发布新数据。
+    /// 实际能否读取以 pop 的返回值为准。
+    pub fn is_empty(&self) -> bool {
+        self.buffer.tail.load(Ordering::Relaxed) == self.buffer.head.load(Ordering::Acquire)
+    }
+
+    /// 丢弃本次 Acquire 读取 head 所观察到的已发布数据，时间复杂度 O(1)。
+    /// 未发布的写入不会被计入；并发时在该次观察之后发布的数据会被保留，
+    /// 因此返回时队列不保证为空。此方法不读取或改写任何数据槽。
+    pub fn clear(&mut self) {
+        let head = self.buffer.head.load(Ordering::Acquire);
+        self.buffer.tail.store(head, Ordering::Release);
+    }
+
+    /// 可读字节数的一次观察；生产者并发追加时，结果可能立即过时。
+    /// Consumer 的独占借用保证观察期间 tail 不会被另一消费者修改。
+    pub fn len(&self) -> usize {
+        let head = self.buffer.head.load(Ordering::Acquire);
+        let tail = self.buffer.tail.load(Ordering::Relaxed);
+        (head + CAPACITY - tail) & MASK
     }
 }

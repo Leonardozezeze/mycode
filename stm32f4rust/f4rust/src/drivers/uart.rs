@@ -1,115 +1,283 @@
-//! 串口器件驱动：TX 阻塞发送；RX 走中断 + comm::ringbuf（契约 2）。
-//!
-//! 泛型核心（IsrRx / UartLink）对任意 USART 实例复用；
-//! 每实例胶水（statics + 构造器 + 中断处理函数）目前只有 USART1 一份，
-//! 加第二个串口时照抄一份或宏化。
+//! 串口驱动：TX 入队后由 TXE 中断发送；RX 中断接收，留给主循环消费。
+//! TX/RX 硬件句柄都由中断独占；UartLink 通过两个 SPSC 队列访问数据。
 
-use crate::comm::ringbuf::RingBuffer;
-use core::cell::UnsafeCell;
-use core::fmt;
+use crate::comm::ringbuf::{CAPACITY, Consumer, Producer, RingBuffer};
+use core::sync::atomic::{AtomicU32, Ordering};
+use core::{cell::UnsafeCell, fmt, marker::PhantomData};
 use cortex_m::peripheral::NVIC;
 use stm32f4xx_hal::{
-    nb::block,
-    // pac::interrupt 一次带入两样东西（PAC 双命名空间导出）：
-    // 属性宏 #[interrupt]，以及枚举别名 interrupt = Interrupt
-    // （宏展开会注入 `interrupt::USART1;` 编译期校验中断名，需要后者才能解析）
-    pac::{Interrupt, USART1, interrupt},
-    prelude::*, // 带入 RxListen 和 embedded-hal-nb 的 Read
-    serial::{Instance, Rx, Tx},
+    nb,
+    pac::{Interrupt, UART5, USART1, interrupt},
+    prelude::*,
+    serial::{Error, Instance, Rx, Tx},
 };
 
-/// Rx 句柄的泊位：UartLink::new 时写入一次，之后只有中断处理函数访问。
-struct IsrRx<U: Instance>(UnsafeCell<Option<Rx<U>>>);
+/// 一次发送全部入队；空间不足时本次数据完全不入队。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SendError {
+    QueueFull,
+}
 
-// SAFETY: 唯一一次写发生在 UartLink::new（主线程，此时中断还未 unmask）；
-// 之后只有本实例的中断处理函数取 &mut，主循环从不触碰——任意时刻单写者。
-unsafe impl<U: Instance> Sync for IsrRx<U> {}
+/// 累计统计快照；各计数独立读取，计数器按 u32 回绕。
+#[derive(Debug, Clone, Copy, Default)]
+pub struct UartStats {
+    pub rx_overrun: u32,
+    pub rx_framing: u32,
+    pub rx_parity: u32,
+    pub rx_noise: u32,
+    pub rx_other: u32,
+    pub rx_dropped: u32,
+    pub tx_queue_full: u32,
+    pub tx_errors: u32,
+}
 
-impl<U: Instance> IsrRx<U> {
-    /// 泊入句柄（只许在 NVIC unmask 之前调用）
-    pub(crate) unsafe fn park(&self, rx: Rx<U>) {
-        // edition 2024：unsafe fn 的函数体不再隐式是 unsafe 块，
-        // 解引用裸指针仍须显式包裹
-        unsafe { *self.0.get() = Some(rx) };
+struct Stats {
+    rx_overrun: AtomicU32,
+    rx_framing: AtomicU32,
+    rx_parity: AtomicU32,
+    rx_noise: AtomicU32,
+    rx_other: AtomicU32,
+    rx_dropped: AtomicU32,
+    tx_queue_full: AtomicU32,
+    tx_errors: AtomicU32,
+}
+
+impl Stats {
+    const fn new() -> Self {
+        Self {
+            rx_overrun: AtomicU32::new(0),
+            rx_framing: AtomicU32::new(0),
+            rx_parity: AtomicU32::new(0),
+            rx_noise: AtomicU32::new(0),
+            rx_other: AtomicU32::new(0),
+            rx_dropped: AtomicU32::new(0),
+            tx_queue_full: AtomicU32::new(0),
+            tx_errors: AtomicU32::new(0),
+        }
     }
-    /// 中断处理函数专用访问
-    pub(crate) unsafe fn with_rx<R>(&self, f: impl FnOnce(&mut Rx<U>) -> R) -> Option<R> {
-        unsafe { (*self.0.get()).as_mut().map(f) }
+
+    fn rx_error(&self, error: Error) {
+        let counter = match error {
+            Error::Overrun => &self.rx_overrun,
+            Error::FrameFormat => &self.rx_framing,
+            Error::Parity => &self.rx_parity,
+            Error::Noise => &self.rx_noise,
+            _ => &self.rx_other,
+        };
+        counter.fetch_add(1, Ordering::Relaxed);
+    }
+
+    fn snapshot(&self) -> UartStats {
+        UartStats {
+            rx_overrun: self.rx_overrun.load(Ordering::Relaxed),
+            rx_framing: self.rx_framing.load(Ordering::Relaxed),
+            rx_parity: self.rx_parity.load(Ordering::Relaxed),
+            rx_noise: self.rx_noise.load(Ordering::Relaxed),
+            rx_other: self.rx_other.load(Ordering::Relaxed),
+            rx_dropped: self.rx_dropped.load(Ordering::Relaxed),
+            tx_queue_full: self.tx_queue_full.load(Ordering::Relaxed),
+            tx_errors: self.tx_errors.load(Ordering::Relaxed),
+        }
     }
 }
 
-pub struct UartLink<U: Instance> {
+struct IsrState<U: Instance> {
     tx: Tx<U>,
-    rx_buf: &'static RingBuffer, // 每个实例自己的池，不共享
+    rx: Rx<U>,
+    // 先从队列取出的字节若遇到 WouldBlock，保留到下次中断，不丢失。
+    pending_tx: Option<u8>,
+    tx_consumer: Consumer<'static>,
+    rx_producer: Producer<'static>,
+}
+
+struct IsrSlot<U: Instance>(UnsafeCell<Option<IsrState<U>>>);
+
+// SAFETY: 初始化在临界区写入一次，之后只有本 USART 中断访问。
+// UART 硬件句柄不暴露给主循环，同一中断不能抢占自身。
+unsafe impl<U: Instance> Sync for IsrSlot<U> {}
+
+pub struct UartLink<U: Instance> {
+    tx_producer: Producer<'static>,
+    rx_consumer: Consumer<'static>,
+    stats: &'static Stats,
+    irq: Interrupt,
+    // Producer/Consumer 已经保证不可复制、不可共享引用跨上下文并发访问。
+    _owner: PhantomData<U>,
 }
 
 impl<U: Instance> UartLink<U> {
-    /// 组装 TX，并打通 RX 中断路径：泊入 Rx → 开 RXNEIE → 开 NVIC。
-    /// 模块私有装配入口；对外只有每实例构造器（如 [`uart1`]），
-    /// 它把私有的 IsrRx/池/中断号都绑定好了。
     fn new(
-        tx: Tx<U>,
-        rx: Rx<U>,
-        rx_buf: &'static RingBuffer,
-        rx_slot: &'static IsrRx<U>,
+        mut tx: Tx<U>,
+        mut rx: Rx<U>,
+        tx_buf: &'static mut RingBuffer,
+        rx_buf: &'static mut RingBuffer,
+        stats: &'static Stats,
+        slot: &'static IsrSlot<U>,
         irq: Interrupt,
     ) -> Self {
-        unsafe {
-            rx_slot.park(rx);
-            let _ = rx_slot.with_rx(|r| r.listen()); // 先泊入、再开外设位
-            NVIC::unmask(irq); // 最后放行 NVIC——顺序即合同
+        let (tx_producer, tx_consumer) = tx_buf.split();
+        let (rx_producer, rx_consumer) = rx_buf.split();
+        cortex_m::interrupt::free(|_| {
+            // SAFETY: 临界区内中断不会访问 slot；只允许初始化一次。
+            let state = unsafe { &mut *slot.0.get() };
+            assert!(state.is_none(), "UART already initialized");
+            tx.unlisten(); // 空队列不得开启 TXEIE，否则会产生持续中断。
+            rx.listen();
+            *state = Some(IsrState {
+                tx,
+                rx,
+                pending_tx: None,
+                tx_consumer,
+                rx_producer,
+            });
+            unsafe { NVIC::unmask(irq) };
+        });
+        Self {
+            tx_producer,
+            rx_consumer,
+            stats,
+            irq,
+            _owner: PhantomData,
         }
-        Self { tx, rx_buf }
     }
 
-    /// 阻塞发送字节序列
-    pub fn send(&mut self, data: &[u8]) {
-        for &b in data {
-            // write 只会在 TXE 未就绪时返回 WouldBlock，block! 原地等；
-            // 发送方向没有其他错误来源，unwrap 可接受
-            block!(self.tx.write(b)).unwrap();
+    /// 非阻塞发送：复制进队列后立即返回，不等待线上发送完成。
+    /// 最大单次长度为 CAPACITY - 1；空间不足时全部拒绝，由调用方决定重试。
+    pub fn send(&mut self, data: &[u8]) -> Result<(), SendError> {
+        if !self.tx_producer.try_push_slice(data) {
+            self.stats.tx_queue_full.fetch_add(1, Ordering::Relaxed);
+            return Err(SendError::QueueFull);
         }
-        block!(self.tx.flush()).unwrap();
+        if !data.is_empty() {
+            // 入队发布后再唤醒中断；主循环无需访问硬件，也不需要屏蔽中断。
+            NVIC::pend(self.irq);
+        }
+        Ok(())
     }
 
-    pub fn send_str(&mut self, s: &str) {
-        self.send(s.as_bytes());
+    pub fn send_str(&mut self, s: &str) -> Result<(), SendError> {
+        self.send(s.as_bytes())
     }
 
-    /// 主循环消费接收缓冲（之后直接喂 comm::proto 解析器）
-    pub fn read_byte(&self) -> Option<u8> {
-        self.rx_buf.pop()
+    /// 主循环读取，协议/Shell 解析由上层负责。
+    pub fn read_byte(&mut self) -> Option<u8> {
+        self.rx_consumer.pop()
+    }
+
+    pub fn stats(&self) -> UartStats {
+        self.stats.snapshot()
+    }
+}
+
+/// 整条格式化消息先写到栈上，成功后再一次入队，避免发出半条消息。
+struct FormatBuffer {
+    bytes: [u8; CAPACITY - 1],
+    len: usize,
+}
+
+impl fmt::Write for FormatBuffer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        if s.len() > self.bytes.len() - self.len {
+            return Err(fmt::Error);
+        }
+        self.bytes[self.len..self.len + s.len()].copy_from_slice(s.as_bytes());
+        self.len += s.len();
+        Ok(())
     }
 }
 
 impl<U: Instance> fmt::Write for UartLink<U> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        self.send(s.as_bytes());
-        Ok(()) // 我们的 send 不会失败
+        self.send_str(s).map_err(|_| fmt::Error)
+    }
+
+    fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> fmt::Result {
+        let mut buffer = FormatBuffer {
+            bytes: [0; CAPACITY - 1],
+            len: 0,
+        };
+        fmt::write(&mut buffer, args)?;
+        self.send(&buffer.bytes[..buffer.len])
+            .map_err(|_| fmt::Error)
     }
 }
 
-// —— 每实例胶水：statics + 构造器 + 中断处理函数 ——
-
-/// USART1 的 RX 字节池：中断生产（push），主循环消费（pop）
-static RX_BUF1: RingBuffer = RingBuffer::new();
-static RX_SLOT1: IsrRx<USART1> = IsrRx(UnsafeCell::new(None));
-/// USART1 的对外构造入口：绑好它的池、泊位和中断号
-pub fn uart1(tx: Tx<USART1>, rx: Rx<USART1>) -> UartLink<USART1> {
-    UartLink::new(tx, rx, &RX_BUF1, &RX_SLOT1, Interrupt::USART1)
+/// 单次中断的 RX 工作有界；错误已由 HAL read() 读 SR/DR 清除，记录后继续尝试。
+fn service_rx<U: Instance>(state: &mut IsrState<U>, stats: &Stats) {
+    for _ in 0..32 {
+        match state.rx.read() {
+            Ok(byte) => {
+                if !state.rx_producer.push(byte) {
+                    stats.rx_dropped.fetch_add(1, Ordering::Relaxed);
+                }
+            }
+            Err(nb::Error::WouldBlock) => break,
+            Err(nb::Error::Other(error)) => stats.rx_error(error),
+        }
+    }
 }
 
-/// USART1 中断：把已到达的字节压入环形缓冲。保持短小——执行期间主循环停摆。
+/// 每次中断最多尝试发送一个字节，交给硬件继续发送，不在这里自旋等待。
+fn service_tx<U: Instance>(state: &mut IsrState<U>, stats: &Stats) {
+    if state.pending_tx.is_none() {
+        state.pending_tx = state.tx_consumer.pop();
+    }
+    if let Some(byte) = state.pending_tx {
+        match state.tx.write(byte) {
+            Ok(()) => state.pending_tx = None,
+            Err(nb::Error::WouldBlock) => {}
+            Err(nb::Error::Other(_)) => {
+                stats.tx_errors.fetch_add(1, Ordering::Relaxed);
+                state.pending_tx = None;
+            }
+        }
+    }
+    if state.pending_tx.is_some() || !state.tx_consumer.is_empty() {
+        state.tx.listen();
+    } else {
+        state.tx.unlisten();
+    }
+}
+
+// 每个 USART 独立的硬件泊位、队列与统计。
+static STATS1: Stats = Stats::new();
+static SLOT1: IsrSlot<USART1> = IsrSlot(UnsafeCell::new(None));
+
+pub fn uart1(tx: Tx<USART1>, rx: Rx<USART1>) -> UartLink<USART1> {
+    // singleton 只交出一次静态存储的独占引用，避免手写 static mut 访问。
+    let tx_buf = cortex_m::singleton!(: RingBuffer = RingBuffer::new())
+        .expect("USART1 TX buffer already taken");
+    let rx_buf = cortex_m::singleton!(: RingBuffer = RingBuffer::new())
+        .expect("USART1 RX buffer already taken");
+    UartLink::new(tx, rx, tx_buf, rx_buf, &STATS1, &SLOT1, Interrupt::USART1)
+}
+
 #[interrupt]
 fn USART1() {
-    // 单次中断最多清 32 字节；没清完的话 RXNE 仍置位，
-    // 退出中断后立即重入，天然续传，ISR 耗时却有上界
-    for _ in 0..32 {
-        match unsafe { RX_SLOT1.with_rx(|rx| rx.read().ok()).flatten() } {
-            Some(b) => {
-                RX_BUF1.push(b); // 池满丢字节，ringbuf 的既定契约
-            }
-            None => break, // WouldBlock（没字节了）或线路错误
-        }
+    // SAFETY: 初始化后只有本中断访问 SLOT1；同一中断不会重入。
+    if let Some(state) = unsafe { &mut *SLOT1.0.get() }.as_mut() {
+        service_rx(state, &STATS1);
+        service_tx(state, &STATS1);
+    }
+}
+
+// UART5 使用独立队列、硬件泊位和统计，复用上面的收发处理逻辑。
+static STATS5: Stats = Stats::new();
+static SLOT5: IsrSlot<UART5> = IsrSlot(UnsafeCell::new(None));
+
+pub fn uart5(tx: Tx<UART5>, rx: Rx<UART5>) -> UartLink<UART5> {
+    let tx_buf = cortex_m::singleton!(: RingBuffer = RingBuffer::new())
+        .expect("UART5 TX buffer already taken");
+    let rx_buf = cortex_m::singleton!(: RingBuffer = RingBuffer::new())
+        .expect("UART5 RX buffer already taken");
+    UartLink::new(tx, rx, tx_buf, rx_buf, &STATS5, &SLOT5, Interrupt::UART5)
+}
+
+#[interrupt]
+fn UART5() {
+    // SAFETY: 初始化后只有本中断访问 SLOT5；同一中断不会重入。
+    if let Some(state) = unsafe { &mut *SLOT5.0.get() }.as_mut() {
+        service_rx(state, &STATS5);
+        service_tx(state, &STATS5);
     }
 }

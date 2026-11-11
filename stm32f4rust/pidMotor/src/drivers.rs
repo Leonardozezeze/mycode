@@ -3,3 +3,5 @@
 
 pub mod dwt;
 pub mod uart;
+pub mod motor;
+pub mod enc;

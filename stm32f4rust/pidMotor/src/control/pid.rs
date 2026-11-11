@@ -7,8 +7,6 @@
 //! u(k)  = clamp( u(k−1) + Δu(k) )
 //! ```
 //!
-//! 使用约定：调用方必须以恒定的 `dt` 调用 [`Pid::update`]。
-//!
 //! 增量式没有独立的积分状态——输出累计值本身就是积分，
 //! 被限幅卡住时累计自然停止，结构上不存在积分饱和。
 
@@ -47,7 +45,7 @@ impl Pid {
     ///
     /// * `setpoint` 目标值
     /// * `measured` 当前测量值
-    /// * `dt`       距上次调用的时间步长（秒），必须 > 0 且每次一致
+    /// * `dt`       距上次调用的实际时间步长（秒），必须 > 0；应以稳定周期采样
     pub fn update(&mut self, setpoint: f32, measured: f32, dt: f32) -> f32 {
         let err = setpoint - measured;
 

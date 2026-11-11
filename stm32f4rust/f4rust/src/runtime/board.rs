@@ -1,40 +1,33 @@
-//! 板级支持（BSP）：时钟配置、引脚映射、板载外设实例化。
+//! 板级支持（BSP）：时钟配置、引脚映射、外设初始化和驱动组装。
 //! 与板子相关（换芯片/晶振/引脚）的代码只改这个文件。
 //!
-//! 产出按准入测试分两路上交：
-//! **直接交给 App 使用的 → [`Board`]；需先经 driver 包装的 → [`DeviceParts`]**。
-//! 配置参数（波特率、引脚 AF 等）属于"板子事实"，全部在本文件定死。
+//! 返回已经初始化和组装好的设备 [`Devices`]，App 直接使用。
+//! 时钟、引脚映射和波特率在本文件配置，电机参数由 runtime::config 提供。
 
+use crate::drivers::{
+    uart::{self, UartLink},
+};
 use stm32f4xx_hal::{
     gpio::{self, Output, PushPull},
     pac::{self, USART1},
     prelude::*,
-    rcc::{Clocks, Config},
-    serial::{Rx, Tx},
+    rcc::Config,
 };
 
-/// App 直接使用的板级琐碎资源
-pub struct Board {
+/// 初始化并组装完毕的设备，交给 App 持有和调用。
+pub struct Devices {
     /// 板载 LED（PF9 / PF10）
     pub red_led: gpio::PF9<Output<PushPull>>,
     pub green_led: gpio::PF10<Output<PushPull>>,
-    /// 时钟状态，初始化外设时使用
-    #[allow(dead_code)] // 骨架期暂未使用
-    pub clocks: Clocks,
+    pub uart1: UartLink<USART1>,
 }
 
-/// 交给 drivers 包装的器件零件（配置完毕的半成品）
-pub struct DeviceParts {
-    /// USART1：PA9=TX，PA10=RX，115200-8N1
-    pub uart1_tx: Tx<USART1>,
-    pub uart1_rx: Rx<USART1>,
-}
-
-/// 板级初始化：时钟树 → DWT 时基 → GPIO → USART1。
+/// 板级初始化：时钟树 → DWT 时基 → GPIO/USART/PWM → 驱动组装。
 ///
 /// PAC 外设句柄在这里一次性 `take()`；DWT / DCB 是一次性使能的
 /// 内核设施，直接交给 `drivers::dwt` 消耗掉。
-pub fn init() -> (Board, DeviceParts) {
+/// UART RX 在组装时交给串口驱动的中断侧，由驱动开启接收中断。
+pub fn init() -> Devices {
     let dp = pac::Peripherals::take().unwrap();
     let cp = cortex_m::peripheral::Peripherals::take().unwrap();
 
@@ -62,12 +55,10 @@ pub fn init() -> (Board, DeviceParts) {
         .unwrap() // Err 只在字长/校验配置非法时出现，8N1 不会
         .split();
 
-    (
-        Board {
-            red_led,
-            green_led,
-            clocks: rcc.clocks,
-        },
-        DeviceParts { uart1_tx, uart1_rx },
-    )
+    let uart1 = uart::uart1(uart1_tx, uart1_rx);
+    Devices {
+        red_led,
+        green_led,
+        uart1,
+    }
 }

@@ -121,7 +121,7 @@ WavePanel::WavePanel(QWidget *parent)
     // 2. QCustomPlot 初始化
     // 注意：Qt6 下 setOpenGl(true) 部分环境会黑屏/崩溃，先注释掉，
     // 性能不够再打开。打开时要放在 setInteractions 之前。
-    m_plot->setOpenGl(true);
+    // m_plot->setOpenGl(true);
     // QCustomPlot 2.x 没有 setAutoReplot：只要不调用 replot() 就不会重绘，
     // 重绘节奏完全由下面的定时器控制。
     m_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
