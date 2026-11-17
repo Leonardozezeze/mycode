@@ -1,7 +1,9 @@
 //! 板级支持：时钟、引脚、DMA 和中断绑定集中在这里。
 //! TIM9 由 embassy-time 独占；TIM1/TIM8、TIM2/TIM5 留给电机和编码器。
+//! TIM9 共用 TIM1_BRK_TIM9 中断，后续使用 TIM1 刹车功能时需协调中断处理。
 
-use crate::drivers::uart::{UartCounters, UartLink};
+use crate::drivers::uart::{UartLink, init_uart};
+use embassy_executor::Spawner;
 use embassy_stm32::{
     bind_interrupts, dma,
     gpio::{Level, Output, Speed},
@@ -13,7 +15,6 @@ use embassy_stm32::{
     time::Hertz,
     usart::{self, Uart},
 };
-use static_cell::StaticCell;
 
 bind_interrupts!(struct Irqs {
     USART1 => usart::InterruptHandler<peripherals::USART1>;
@@ -24,10 +25,11 @@ bind_interrupts!(struct Irqs {
 pub struct Devices {
     pub red_led: Output<'static>,
     pub green_led: Output<'static>,
-    pub uart1: UartLink,
+    /// USART1 用于调试日志输出和调试数据接收。
+    pub uart1: &'static UartLink,
 }
 
-pub fn init() -> Devices {
+pub fn init(spawner: Spawner) -> Devices {
     let mut config = embassy_stm32::Config::default();
     config.rcc.hse = Some(Hse {
         freq: Hertz(8_000_000),
@@ -44,17 +46,17 @@ pub fn init() -> Devices {
     });
     config.rcc.sys = Sysclk::PLL1_P;
     config.rcc.ahb_pre = AHBPrescaler::DIV1;
-    config.rcc.apb1_pre = APBPrescaler::DIV4;
-    config.rcc.apb2_pre = APBPrescaler::DIV2;
+    config.rcc.apb1_pre = APBPrescaler::DIV4; // 42 MHz
+    config.rcc.apb2_pre = APBPrescaler::DIV2; // 84 MHz
     // 初始化同时启动 TIM9 时间驱动，不需要另配 SysTick 或 DWT 时基。
     let p = embassy_stm32::init(config);
 
-    // 保持原项目的 GPIO 初始低电平。
-    let red_led = Output::new(p.PF9, Level::Low, Speed::Low);
-    let green_led = Output::new(p.PF10, Level::Low, Speed::Low);
+    // PF9/PF10 的 LED 为低电平点亮，初始化为熄灭。
+    let red_led = Output::new(p.PF9, Level::High, Speed::Low);
+    let green_led = Output::new(p.PF10, Level::High, Speed::Low);
 
     let uart_config = usart::Config::default(); // 115200、8N1
-    let uart = Uart::new(
+    let uart1 = Uart::new(
         p.USART1,
         p.PA10,
         p.PA9,
@@ -65,10 +67,9 @@ pub fn init() -> Devices {
     )
     .expect("invalid USART1 config");
 
-    // DMA 存储必须常驻且位于可由 DMA 访问的 SRAM，不能放进 CCM。
-    static RX_BUFFER: StaticCell<[u8; 256]> = StaticCell::new();
-    static UART1_COUNTERS: UartCounters = UartCounters::new();
-    let uart1 = UartLink::new(uart, RX_BUFFER.init([0; 256]), &UART1_COUNTERS);
+    // 创建独立的静态 DMA 缓冲和串口实例，并启动后台收发任务。
+    // F407 的 DMA 无法访问 CCM；memory.x 将缓冲和任务存储放在普通 SRAM。
+    let uart1 = init_uart!(spawner, uart1, 256);
     Devices {
         red_led,
         green_led,

@@ -1,7 +1,8 @@
 //! 板级支持：时钟、引脚、DMA 和中断绑定集中在这里。
 //! TIM2 由 embassy-time 独占；TIM1/TIM3/TIM4 留给电机和编码器。
 
-use crate::drivers::uart::{UartCounters, UartLink};
+use crate::drivers::uart::{UartLink, init_uart};
+use embassy_executor::Spawner;
 use embassy_stm32::{
     bind_interrupts, dma,
     gpio::{Level, Output, Speed},
@@ -10,7 +11,6 @@ use embassy_stm32::{
     time::Hertz,
     usart::{self, Uart},
 };
-use static_cell::StaticCell;
 
 bind_interrupts!(struct Irqs {
     USART1 => usart::InterruptHandler<peripherals::USART1>;
@@ -21,10 +21,11 @@ bind_interrupts!(struct Irqs {
 pub struct Devices {
     pub red_led: Output<'static>,
     pub green_led: Output<'static>,
-    pub uart1: UartLink,
+    /// USART1 用于调试日志输出和调试数据接收。
+    pub uart1: &'static UartLink,
 }
 
-pub fn init() -> Devices {
+pub fn init(spawner: Spawner) -> Devices {
     let mut config = embassy_stm32::Config::default();
     config.rcc.hse = Some(Hse {
         freq: Hertz(8_000_000),
@@ -48,7 +49,7 @@ pub fn init() -> Devices {
     let green_led = Output::new(p.PC13, Level::High, Speed::Low);
 
     let uart_config = usart::Config::default(); // 115200、8N1
-    let uart = Uart::new(
+    let uart1 = Uart::new(
         p.USART1,
         p.PA10,
         p.PA9,
@@ -59,10 +60,8 @@ pub fn init() -> Devices {
     )
     .expect("invalid USART1 config");
 
-    // DMA 缓冲必须常驻于 SRAM。
-    static RX_BUFFER: StaticCell<[u8; 256]> = StaticCell::new();
-    static UART1_COUNTERS: UartCounters = UartCounters::new();
-    let uart1 = UartLink::new(uart, RX_BUFFER.init([0; 256]), &UART1_COUNTERS);
+    // 创建独立的静态 DMA 缓冲和串口实例，并启动后台收发任务。
+    let uart1 = init_uart!(spawner, uart1, 256);
     Devices {
         red_led,
         green_led,

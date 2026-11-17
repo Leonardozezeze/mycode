@@ -1,0 +1,17 @@
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+
+runner = ["sh", "-c", "probe-rs download --chip STM32F103CB \"$0\" && probe-rs reset --chip STM32F103CB"]
+linker = "flip-link"#栈放在静态变量前面 栈溢出进入hardfault
+rustflags = [
+  "-C", "link-arg=-Tlink.x",#设置链接脚本 link.x（在cortex-m-rt里内置的链接脚本）
+  "-C", "link-arg=--nmagic",#布局文件不对齐 不影响系统对齐
+]
+
+[build]
+target = "thumbv7m-none-eabi" # Cortex-M3
+
+[alias]
+# `cargo rb foo` will expand to `cargo run --bin foo`
+rb = "run --bin"
+# `cargo rrb foo` will expand to `cargo run --release --bin foo`
+rrb = "run --release --bin"

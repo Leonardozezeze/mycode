@@ -94,6 +94,17 @@ fn blink_red_forever() -> ! {
 
     rcc.ahb1enr().modify(|w| w.set_gpiofen(true));
     cortex_m::asm::dsb(); // 时钟使能后按手册要求插屏障再访问外设
+    // PF9 上的 LED 为低电平点亮；先置高，再配置为低速推挽输出。
+    gpiof.bsrr().write(|w| w.set_bs(9, true));
+    gpiof
+        .otyper()
+        .modify(|w| w.set_ot(9, pac::gpio::vals::Ot::PUSH_PULL));
+    gpiof
+        .ospeedr()
+        .modify(|w| w.set_ospeedr(9, pac::gpio::vals::Ospeedr::LOW_SPEED));
+    gpiof
+        .pupdr()
+        .modify(|w| w.set_pupdr(9, pac::gpio::vals::Pupdr::FLOATING));
     gpiof
         .moder()
         .modify(|w| w.set_moder(9, pac::gpio::vals::Moder::OUTPUT));
@@ -105,9 +116,9 @@ fn blink_red_forever() -> ! {
         ((KERNEL_FREQUENCY as u64) * (HALF_PERIOD_MS as u64) / 1000).min(u32::MAX as u64) as u32;
 
     loop {
-        gpiof.bsrr().write(|w| w.set_bs(9, true)); // PF9 置位
+        gpiof.bsrr().write(|w| w.set_br(9, true)); // PF9 拉低，点亮 LED
         delay_cycles(half_period_cycles);
-        gpiof.bsrr().write(|w| w.set_br(9, true)); // PF9 复位
+        gpiof.bsrr().write(|w| w.set_bs(9, true)); // PF9 拉高，熄灭 LED
         delay_cycles(half_period_cycles);
     }
 }
