@@ -1,4 +1,4 @@
-//! Panic 行为：USART1 打印错误位置和消息，红灯（PC14）快闪。
+//! Panic 行为：先释放推杆控制端，再通过 USART1 打印错误，红灯（PC14）快闪。
 //!
 //! 最后防线路径，是分层契约的例外：直接用 PAC 裸指针操作寄存器。
 //! 原因：panic 时任何所有权对象都不可信，也不能依赖尚未初始化的驱动。
@@ -119,6 +119,14 @@ fn blink_red_forever() -> ! {
 fn panic(info: &PanicInfo) -> ! {
     // panic 可能由中断引发，别让打印/闪灯被打断
     cortex_m::interrupt::disable();
+
+    // panic 不会执行异步动作的 Drop，先释放实际接线的 PB4/PB5。
+    pac::RCC.apb2enr().modify(|w| w.set_gpioben(true));
+    cortex_m::asm::dsb();
+    pac::GPIOB.bsrr().write(|w| {
+        w.set_bs(4, true);
+        w.set_bs(5, true);
+    });
 
     if PanicUart::available() {
         // 接管前停止 TX DMA，防止外设继续写 DR，与 panic 文本交错。

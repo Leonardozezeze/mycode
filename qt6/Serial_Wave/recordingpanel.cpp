@@ -1,7 +1,5 @@
 #include "recordingpanel.h"
 #include "wavepanel.h"
-#include "samplearchive.h"
-
 #include <QBoxLayout>
 #include <QCheckBox>
 #include <QFormLayout>
@@ -9,163 +7,156 @@
 #include <QLocale>
 #include <QPushButton>
 #include <QTimer>
+#include <QSettings>
 
-namespace {
-
-constexpr QRgb kColorRunning = 0x66bb6a;   // 有数据在进：绿
-constexpr QRgb kColorMuted   = 0x9a9a9a;   // 空闲：灰
-
-QLabel *makeKeyLabel(const QString &text, QWidget *parent)
+namespace
 {
-    auto *label = new QLabel(text, parent);
-    label->setObjectName("formLabel");
-    return label;
+QString formatBytes(qint64 b)
+{
+    if (b < 1024)
+        return QString::number(b) + QStringLiteral(" B");
+    if (b < 1024 * 1024)
+        return QString::number(b / 1024.0, 'f', 1) + QStringLiteral(" KB");
+    return QString::number(b / (1024. * 1024.), 'f', 1) + QStringLiteral(" MB");
 }
-
-QString formatBytes(qint64 bytes)
+QString duration(double seconds)
 {
-    if (bytes < 1024)
-        return QStringLiteral("%1 B").arg(bytes);
-    if (bytes < 1024 * 1024)
-        return QString::number(bytes / 1024.0, 'f', 1) + QStringLiteral(" KB");
-    return QString::number(bytes / (1024.0 * 1024.0), 'f', 1)
-           + QStringLiteral(" MB");
-}
-
-QString formatDuration(double seconds)
-{
-    const qint64 total = seconds > 0 ? qint64(seconds) : 0;
+    const qint64 s = qMax(qint64(0), qint64(seconds));
     return QStringLiteral("%1:%2:%3")
-        .arg(total / 3600, 2, 10, QLatin1Char('0'))
-        .arg((total / 60) % 60, 2, 10, QLatin1Char('0'))
-        .arg(total % 60, 2, 10, QLatin1Char('0'));
+        .arg(s / 3600, 2, 10, QLatin1Char('0'))
+        .arg((s / 60) % 60, 2, 10, QLatin1Char('0'))
+        .arg(s % 60, 2, 10, QLatin1Char('0'));
 }
-
 } // namespace
-
-RecordingPanel::RecordingPanel(QWidget *parent)
-    : QWidget(parent)
-    , m_timer(new QTimer(this))
+RecordingPanel::RecordingPanel(QWidget *parent) : QWidget(parent)
 {
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(8, 8, 8, 8);
-    layout->setSpacing(8);
-
-    auto *title = new QLabel(tr("采集记录"), this);
+    layout->setSpacing(6);
+    auto *title = new QLabel(tr("采集会话"), this);
     title->setObjectName("panelTitle");
     layout->addWidget(title);
-
-    m_lblState    = new QLabel(QStringLiteral("--"), this);
-    m_lblPoints   = new QLabel(QStringLiteral("--"), this);
-    m_lblDuration = new QLabel(QStringLiteral("--"), this);
-    m_lblRate     = new QLabel(QStringLiteral("--"), this);
-    m_lblFileSize = new QLabel(QStringLiteral("--"), this);
-    m_lblFlush    = new QLabel(this);
-    m_lblFlush->setText(
-        tr("%1 KB / 次").arg(SampleArchive::flushThresholdBytes / 1024));
-
     auto *form = new QFormLayout;
-    form->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
-    form->setHorizontalSpacing(10);
-    form->setVerticalSpacing(6);
-    form->addRow(makeKeyLabel(tr("状态"),     this), m_lblState);
-    form->addRow(makeKeyLabel(tr("采样点"),   this), m_lblPoints);
-    form->addRow(makeKeyLabel(tr("时长"),     this), m_lblDuration);
-    form->addRow(makeKeyLabel(tr("数据速率"), this), m_lblRate);
-    form->addRow(makeKeyLabel(tr("缓冲文件"), this), m_lblFileSize);
-    form->addRow(makeKeyLabel(tr("落盘阈值"), this), m_lblFlush);
+    form->setVerticalSpacing(4);
+    const QStringList keys = {tr("状态"),     tr("采样点"), tr("数据时长"),
+                              tr("记录速率"), tr("已保存"), tr("开始时间")};
+    const std::array<QLabel **, 6> labels = {&m_lblState, &m_lblPoints,   &m_lblDuration,
+                                             &m_lblRate,  &m_lblFileSize, &m_lblStarted};
+    for (int i = 0; i < keys.size(); ++i)
+    {
+        auto *key = new QLabel(keys[i], this);
+        key->setObjectName("formLabel");
+        *labels[i] = new QLabel(QStringLiteral("--"), this);
+        form->addRow(key, *labels[i]);
+    }
     layout->addLayout(form);
-
-    auto *buttonRow = new QHBoxLayout;
-    buttonRow->setSpacing(6);
-    m_autoExportCheck = new QCheckBox(tr("自动导出"), this);
-    m_autoExportCheck->setToolTip(
-        tr("勾选后，串口断开时自动把全部数据导出到“文档/Serial_Wave”目录"));
-    m_exportBtn = new QPushButton(tr("导出…"), this);
-
-    buttonRow->addWidget(m_autoExportCheck);
-    buttonRow->addStretch();
-    buttonRow->addWidget(m_exportBtn);
-    layout->addLayout(buttonRow);
-
+    auto *buttons = new QHBoxLayout;
+    m_recordBtn = new QPushButton(tr("开始记录"), this);
+    m_recordBtn->setObjectName("primaryButton");
+    auto *newBtn = new QPushButton(tr("新建会话"), this);
+    newBtn->setToolTip(tr("保存并结束当前记录，再创建新会话；原文件保留。"));
+    auto *exportBtn = new QPushButton(tr("导出…"), this);
+    buttons->addWidget(m_recordBtn);
+    buttons->addWidget(newBtn);
+    buttons->addWidget(exportBtn);
+    layout->addLayout(buttons);
+    auto *row = new QHBoxLayout;
+    m_autoExportCheck = new QCheckBox(tr("断开时导出 CSV"), this);
+    m_autoExportCheck->setToolTip(tr("原始会话始终自动保存；勾选后断开传感连接时额外导出 CSV。"));
+    m_autoExportCheck->setChecked(QSettings().value("recording/autoExport", false).toBool());
+    auto *directory = new QPushButton(tr("记录目录"), this);
+    row->addWidget(m_autoExportCheck);
+    row->addStretch();
+    row->addWidget(directory);
+    layout->addLayout(row);
+    auto *cleanup = new QPushButton(tr("清理历史会话…"), this);
+    cleanup->setObjectName("clearSavedSessionsButton");
+    cleanup->setToolTip(tr("确认后删除记录目录中的历史 .swave 与配套事件文件；保留当前会话和导出文件。"));
+    layout->addWidget(cleanup);
+    connect(cleanup, &QPushButton::clicked, this, [this]
+    {
+        if (m_wave) m_wave->clearSavedSessions();
+    });
     layout->addStretch();
-
-    connect(m_exportBtn, &QPushButton::clicked,
-            this, &RecordingPanel::exportRequested);
-
-    // 状态/速率每隔 0.5 秒刷新一次即可，不需要跟 33 FPS 同频
-    m_timer->setInterval(500);
-    connect(m_timer, &QTimer::timeout, this, &RecordingPanel::refreshStats);
-    m_timer->start();
-
-    setValue(m_lblState, tr("○ 空闲"), QColor(kColorMuted));
+    connect(m_recordBtn, &QPushButton::clicked, this,
+            [this]
+            {
+                if (!m_wave)
+                    return;
+                if (m_wave->isRecording())
+                    m_wave->stopRecording();
+                else
+                    m_wave->startRecording();
+            });
+    connect(newBtn, &QPushButton::clicked, this,
+            [this]
+            {
+                if (m_wave)
+                    m_wave->clearData();
+            });
+    connect(exportBtn, &QPushButton::clicked, this, &RecordingPanel::exportRequested);
+    connect(directory, &QPushButton::clicked, this,
+            [this]
+            {
+                if (m_wave)
+                    m_wave->showRecordingDirectory();
+            });
+    connect(m_autoExportCheck, &QCheckBox::toggled, this,
+            [](bool b) { QSettings().setValue("recording/autoExport", b); });
+    auto *timer = new QTimer(this);
+    timer->setInterval(500);
+    connect(timer, &QTimer::timeout, this, &RecordingPanel::refreshStats);
+    timer->start();
 }
-
 void RecordingPanel::setWavePanel(WavePanel *wave)
 {
     m_wave = wave;
-    m_hasBaseline = false;
-    m_lastCount = 0;
-    refreshStats();
+    connect(wave, &WavePanel::sessionChanged, this, &RecordingPanel::resetStats);
+    resetStats();
 }
-
 bool RecordingPanel::autoExport() const
 {
-    return m_autoExportCheck && m_autoExportCheck->isChecked();
+    return m_autoExportCheck->isChecked();
 }
-
-void RecordingPanel::setValue(QLabel *label, const QString &text,
-                              const QColor &color)
+void RecordingPanel::setValue(QLabel *label, const QString &text, const QColor &color)
 {
     label->setText(text);
-
-    const QString css = color.isValid()
-                            ? QStringLiteral("color: %1;").arg(color.name())
-                            : QString();
+    const QString css =
+        color.isValid() ? QStringLiteral("color: %1;").arg(color.name()) : QString();
     if (label->styleSheet() != css)
         label->setStyleSheet(css);
 }
-
+void RecordingPanel::resetStats()
+{
+    m_lastCount = m_wave ? m_wave->sampleCount() : 0;
+    m_rateClock.start();
+    refreshStats();
+}
 void RecordingPanel::refreshStats()
 {
-    if (!m_wave) {
-        setValue(m_lblState, tr("--"));
-        setValue(m_lblPoints, QStringLiteral("--"));
-        setValue(m_lblDuration, QStringLiteral("--"));
-        setValue(m_lblRate, QStringLiteral("--"));
-        setValue(m_lblFileSize, QStringLiteral("--"));
+    if (!m_wave)
         return;
-    }
-
     const qint64 count = m_wave->sampleCount();
-    bool receiving = false;
-
-    if (!m_hasBaseline) {
-        m_hasBaseline = true;
-        m_lastCount = count;
-        m_rateClock.start();
-    } else {
-        const qint64 elapsedMs = m_rateClock.restart();
-        const qint64 delta = count - m_lastCount;
-        m_lastCount = count;
-        receiving = delta > 0;
-
-        const double rate = elapsedMs > 0
-                                ? delta * 1000.0 / double(elapsedMs)
-                                : 0.0;
-        setValue(m_lblRate,
-                 QString::number(rate, 'f', 1) + tr(" 点/秒"));
-    }
-
+    const qint64 elapsed = m_rateClock.isValid() ? m_rateClock.restart() : 0;
+    const qint64 delta = qMax(qint64(0), count - m_lastCount);
+    m_lastCount = count;
+    const double rate = m_wave->isRecording() && elapsed > 0 ? delta * 1000. / elapsed : 0;
+    const bool error = m_wave->hasStorageError();
     setValue(m_lblState,
-             receiving ? tr("● 记录中") : tr("○ 空闲"),
-             receiving ? QColor(kColorRunning) : QColor(kColorMuted));
-
+             error                   ? tr("保存失败 · 已停止")
+             : m_wave->isPlayback()  ? tr("历史回看")
+             : m_wave->isRecording() ? tr("记录中 · 自动保存")
+                                     : tr("未记录"),
+             QColor(error                   ? 0xef5350
+                    : m_wave->isRecording() ? 0x66bb6a
+                                            : 0x9a9a9a));
     setValue(m_lblPoints, QLocale().toString(count));
-    setValue(m_lblDuration, formatDuration(m_wave->lastTime()));
+    setValue(m_lblDuration, duration(m_wave->lastTime()));
+    setValue(m_lblRate, QString::number(rate, 'f', 1) + tr(" 点/秒"));
     setValue(m_lblFileSize, formatBytes(m_wave->bufferSize()));
-
-    const QString bufferPath = m_wave->bufferFileName();
-    if (m_lblFileSize->toolTip() != bufferPath)
-        m_lblFileSize->setToolTip(bufferPath);
+    setValue(m_lblStarted, m_wave->startedAt().isValid()
+                               ? m_wave->startedAt().toLocalTime().toString("MM-dd HH:mm:ss")
+                               : QStringLiteral("--"));
+    m_lblFileSize->setToolTip(m_wave->bufferFileName());
+    m_recordBtn->setText(m_wave->isRecording() ? tr("停止记录") : tr("开始记录"));
 }

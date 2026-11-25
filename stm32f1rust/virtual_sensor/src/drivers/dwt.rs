@@ -29,7 +29,7 @@ impl Dwt {
         dwt.set_cycle_count(0);
         dwt.enable_cycle_counter();
     }
-    /// 阻塞延时 `us` 微秒
+    /// 阻塞延时 `us` 微秒（单次上限约 25 秒 @168MHz）
     pub fn delay_us(us: u32) {
         let start = peripheral::DWT::cycle_count();
         let ticks = us.saturating_mul(CYCLES_PER_US.load(Ordering::Relaxed));

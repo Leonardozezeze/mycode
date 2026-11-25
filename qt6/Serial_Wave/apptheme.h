@@ -116,6 +116,9 @@ QLabel#deviceId {
     font-weight: 600;
 }
 
+QLabel#serialTraffic { color: #b0b0b0; font-size: 12px; }
+QLabel#serialLastReceive { color: #8a8a8a; font-size: 11px; }
+
 QToolTip {
     color: #e0e0e0;
     background: #2d2d2d;

@@ -1,46 +1,42 @@
-use crate::runtime::board::{self, Devices};
-use crate::runtime::tasks;
-use embassy_sync::channel::Channel;
-pub struct App {
-    devices: Devices,
-}
-impl App {
-    pub fn init() -> Self {
-        Self {
-            devices: board::init(),
-        }
-    }
-    pub async fn run(self, spawner: embassy_executor::Spawner) -> ! {
-        let Devices {
-            red_led,
-            green_led,
-            tx,
-            rx,
-        } = self.devices;
-        static TX_QUEUE: tasks::TxQueue = Channel::new();
-        let tx_sender = TX_QUEUE.sender();
-        let tx_receiver = TX_QUEUE.receiver();
-        spawner
-            .spawn(tasks::uart_tx_task(tx, tx_receiver))
-            .expect("failed to spawn UART TX task");
-        let message = tasks::TxMessage::from_slice(b"UART ready\r\n").expect("message too long");
-        tx_sender.send(message).await;
-        static RX_QUEUE: tasks::RxQueue = Channel::new();
-        spawner
-            .spawn(tasks::uart_rx_task(rx, RX_QUEUE.sender()))
-            .expect("failed to spawn UART RX task");
-        loop {
-            match RX_QUEUE.receive().await {
-                tasks::RxEvent::Data(data) => {
-                    // 下一步交给通信层处理
-                    let message =
-                        tasks::TxMessage::from_slice(b"fafhakfaj\r\n").expect("TX message capacity too small");
-                    tx_sender.send(message).await;
-                }
-                tasks::RxEvent::Error(error) => {
-                    // 下一步记录错误，并通知通信层
-                }
-            }
-        }
-    }
+//! 应用层：初始化设备并启动调试串口、心跳、遥测和含杂率联动推杆任务。
+use crate::{
+    comm::virsenser,
+    drivers::{adc_seed, can::CanLink},
+    runtime::{
+        board::Devices,
+        shell::commands::{bind_can1, bind_uart1},
+        tasks::{can_shell_task, can_task, heartbeat, uart_shell_task},
+    },
+};
+use embassy_executor::Spawner;
+
+static CAN1_LINK: CanLink = CanLink::new();
+
+pub async fn run(mut devices: Devices, spawner: Spawner) -> ! {
+    // 在任何虚拟传感器更新之前完成种子采集和全局 RNG 初始化。
+    let seed = adc_seed::get_adc_seed64(devices.adc1, devices.adc_noise_pin).await;
+    virsenser::rng_init(seed);
+    let can_link = &CAN1_LINK;
+    bind_can1(can_link);
+    bind_uart1(devices.uart1);
+    spawner
+        .spawn(uart_shell_task::uart_shell_task(devices.uart1))
+        .expect("failed to spawn UART shell task");
+
+    devices.can.enable().await;
+    let (tx, rx) = devices.can.split();
+    spawner
+        .spawn(heartbeat::heartbeat_task(devices.green_led))
+        .expect("failed to spawn heartbeat task");
+    spawner
+        .spawn(can_task::can_tx_task(tx, can_link))
+        .expect("can_tx_task init failed");
+    spawner
+        .spawn(can_task::can_rx_task(rx, can_link))
+        .expect("can_rx_task init failed");
+    spawner
+        .spawn(can_shell_task::can_shell_task(can_link))
+        .expect("can_shell_task init failed");
+    // 主任务挂起，保留红灯句柄；panic 仍走独立的 PAC 接管路径。
+    core::future::pending().await
 }

@@ -2,6 +2,7 @@
 #define MACHINESTATUS_H
 
 #include <QtNumeric>
+#include "telemetry.h"
 
 // 解析层负责填这个结构体，界面只负责显示。
 // 没有数据的字段保持 NaN，界面会显示 "--"。
@@ -14,6 +15,8 @@ struct MachineStatus
     double  rpm          = qQNaN();   // 电机实际转速 rpm
     double  rpmTarget    = qQNaN();   // 设定转速 rpm
     double  current      = qQNaN();   // 电机电流 A
+    double actuatorPosition = qQNaN();
+    ActuatorState actuatorState = ActuatorState::Unknown;
     bool    running      = false;     // 电机运行中
     bool    alarm        = false;     // 报警状态
     quint64 frames       = 0;         // 已接收帧数

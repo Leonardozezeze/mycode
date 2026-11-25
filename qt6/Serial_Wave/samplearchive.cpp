@@ -1,122 +1,244 @@
 #include "samplearchive.h"
-
+#include "telemetry.h"
 #include <QDataStream>
-#include <QDir>
-#include <QStandardPaths>
-#include <QTemporaryFile>
+#include <QFile>
+#include <QFileInfo>
+#include <QSaveFile>
+#include <QtNumeric>
+#include <limits>
 
-namespace {
-
-constexpr qint64 kDoubleBytes = qint64(sizeof(double));
-
+namespace
+{
+constexpr char magic[] = "SWAVE001";
+void configure(QDataStream &stream)
+{
+    stream.setByteOrder(QDataStream::LittleEndian);
+    stream.setFloatingPointPrecision(QDataStream::DoublePrecision);
+    stream.setVersion(QDataStream::Qt_6_5);
+}
 } // namespace
 
-SampleArchive::SampleArchive(int channelCount)
-    : m_channelCount(qMax(1, channelCount))
-    , m_readValues(m_channelCount, 0.0)
+SampleArchive::SampleArchive(int channels)
+    : m_channelCount(qMax(1, channels)), m_readValues(m_channelCount, 0.0)
 {
-    openBufferFile();
 }
-
 SampleArchive::~SampleArchive()
 {
-    delete m_file;   // QTemporaryFile 析构时自动删除文件
+    if (!m_readOnly)
+        flush();
+    close();
 }
-
-bool SampleArchive::openBufferFile()
+void SampleArchive::close()
 {
     delete m_file;
     m_file = nullptr;
+    m_pending.clear();
+    m_flushedCount = 0;
+    m_lastX = 0;
+    m_ignoredTailBytes = 0;
+}
 
-    const QString dir =
-        QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    m_file = new QTemporaryFile(
-        QDir(dir).filePath(QStringLiteral("Serial_Wave_XXXXXX.dat")));
-    m_file->setAutoRemove(true);
-
-    if (!m_file->open()) {
-        m_error = m_file->errorString();
+bool SampleArchive::create(const QString &path, int channelCount)
+{
+    const int channels = channelCount > 0 ? channelCount : m_channelCount;
+    if (channels != 4 && channels != sampleChannelCount)
+    {
+        m_error = QStringLiteral("不支持的会话通道数");
         return false;
     }
+    if (!m_readOnly && !flush())
+        return false;
+    auto *file = new QFile(path);
+    if (!file->open(QIODevice::ReadWrite | QIODevice::NewOnly))
+    {
+        m_error = file->errorString();
+        delete file;
+        return false;
+    }
+    QDataStream out(file);
+    configure(out);
+    const auto started = QDateTime::currentDateTimeUtc();
+    out.writeRawData(magic, 8);
+    out << quint32(channels == 4 ? 1 : 2) << quint32(channels) << started.toMSecsSinceEpoch();
+    if (out.status() != QDataStream::Ok || !file->flush())
+    {
+        m_error = file->errorString();
+        file->remove();
+        delete file;
+        return false;
+    }
+    close();
+    m_file = file;
+    m_channelCount = channels;
+    m_readValues.resize(channels);
+    m_readOnly = false;
+    m_startedAt = started;
     m_error.clear();
-    m_file->setTextModeEnabled(false);
     return true;
 }
 
-void SampleArchive::append(double x, const double *values)
+bool SampleArchive::open(const QString &path)
 {
-    m_lastX = x;
+    if (!m_readOnly && !flush())
+        return false;
+    // 先验证新文件，失败时保留当前会话。
+    QFile probe(path);
+    if (!probe.open(QIODevice::ReadOnly))
+    {
+        m_error = probe.errorString();
+        return false;
+    }
+    QDataStream in(&probe);
+    configure(in);
+    char id[8] = {};
+    quint32 version = 0, channels = 0;
+    qint64 timestamp = 0;
+    in.readRawData(id, 8);
+    in >> version >> channels >> timestamp;
+    if (in.status() != QDataStream::Ok || QByteArray(id, 8) != QByteArray(magic, 8) ||
+        !((version == 1 && channels == 4) || (version == 2 && channels == sampleChannelCount)) ||
+        probe.size() < headerBytes ||
+        !QDateTime::fromMSecsSinceEpoch(timestamp).isValid())
+    {
+        m_error = QStringLiteral("会话格式或版本不受支持");
+        return false;
+    }
+    const qint64 bytesPerRecord = (1 + channels) * qint64(sizeof(double));
+    const qint64 records = (probe.size() - headerBytes) / bytesPerRecord;
+    double last = 0;
+    if (records > 0)
+    {
+        if (!probe.seek(headerBytes + (records - 1) * bytesPerRecord))
+        {
+            m_error = probe.errorString();
+            return false;
+        }
+        in >> last;
+        if (in.status() != QDataStream::Ok || !qIsFinite(last) || last < 0)
+        {
+            m_error = QStringLiteral("会话时间数据损坏");
+            return false;
+        }
+    }
+    auto *file = new QFile(path);
+    if (!file->open(QIODevice::ReadOnly))
+    {
+        m_error = file->errorString();
+        delete file;
+        return false;
+    }
+    close();
+    m_file = file;
+    m_readOnly = true;
+    m_channelCount = int(channels);
+    m_readValues.resize(channels);
+    m_flushedCount = records;
+    m_lastX = last;
+    m_startedAt = QDateTime::fromMSecsSinceEpoch(timestamp).toUTC();
+    m_ignoredTailBytes = (probe.size() - headerBytes) % recordBytes();
+    m_error.clear();
+    return true;
+}
+
+bool SampleArchive::append(double x, const double *values)
+{
+    if (!m_file || m_readOnly)
+    {
+        m_error = QStringLiteral("没有可写的采集会话");
+        return false;
+    }
+    if (!qIsFinite(x) || x < 0 || (count() && x < m_lastX))
+    {
+        m_error = QStringLiteral("采样时间必须有限且单调递增");
+        return false;
+    }
     m_pending.append(x);
     for (int c = 0; c < m_channelCount; ++c)
         m_pending.append(values[c]);
-
-    // 内存缓冲到上限就落盘，避免长时间采集内存一直涨
-    if (m_pending.size() * kDoubleBytes >= flushThresholdBytes)
-        flush();
+    m_lastX = x;
+    return m_pending.size() * qint64(sizeof(double)) < flushThresholdBytes || flush();
 }
 
-void SampleArchive::clear()
+bool SampleArchive::saveAs(const QString &path)
 {
-    m_pending.clear();
-    m_flushedCount = 0;
-    m_lastX = 0.0;
-    m_error.clear();
-    openBufferFile();   // 旧的临时文件随 delete 一起删除，新开一个空文件
-}
-
-bool SampleArchive::writeSamples(const QVector<double> &flatSamples)
-{
-    if (flatSamples.isEmpty())
-        return true;
-
-    if (!m_file || !m_file->isOpen()) {
-        if (!openBufferFile())
-            return false;
-    }
-
-    // 导出读取过文件后位置不在末尾。按“已落盘record数 × 每条记录字节数”
-    // 定位，不用 size()：QFile 有写缓冲，size() 可能还没把缓冲算进去。
-    if (!m_file->seek(m_flushedCount * recordBytes())) {
-        m_error = m_file->errorString();
-        return false;
-    }
-
-    bool writeOk = true;
+    const QFileInfo source(bufferFileName()), destination(path);
+    if (!m_file || source.absoluteFilePath() == destination.absoluteFilePath() ||
+        (!destination.canonicalFilePath().isEmpty() &&
+         source.canonicalFilePath() == destination.canonicalFilePath()))
     {
-        QDataStream out(m_file);
-        out.setByteOrder(QDataStream::LittleEndian);
-        out.setFloatingPointPrecision(QDataStream::DoublePrecision);
-        for (double v : flatSamples)
-            out << v;
-        writeOk = out.status() == QDataStream::Ok;
-    }
-
-    if (!writeOk) {
-        m_error = QStringLiteral("写入采样缓冲失败");
+        m_error = QStringLiteral("请选择不同的会话保存路径");
         return false;
     }
-
-    // QFile 写入有缓冲，显式 flush 后才算真正落盘
-    if (!m_file->flush()) {
-        m_error = m_file->errorString();
+    QFile input(bufferFileName());
+    QSaveFile output(path);
+    if (!input.open(QIODevice::ReadOnly) || !output.open(QIODevice::WriteOnly))
+    {
+        m_error = input.isOpen() ? output.errorString() : input.errorString();
         return false;
     }
+    qint64 remaining = headerBytes + m_flushedCount * recordBytes();
+    while (remaining > 0)
+    {
+        const auto block = input.read(qMin(remaining, qint64(64 * 1024)));
+        if (block.isEmpty() || output.write(block) != block.size())
+        {
+            m_error = QStringLiteral("复制已保存的会话数据失败");
+            return false;
+        }
+        remaining -= block.size();
+    }
+    QDataStream out(&output);
+    configure(out);
+    for (double value : m_pending)
+        out << value;
+    if (out.status() != QDataStream::Ok || !output.commit())
+    {
+        m_error = output.errorString();
+        return false;
+    }
+    auto *replacement = new QFile(path);
+    if (!replacement->open(m_readOnly ? QIODevice::ReadOnly : QIODevice::ReadWrite))
+    {
+        m_error = QStringLiteral("会话已另存，但无法重新打开：%1").arg(replacement->errorString());
+        delete replacement;
+        return false;
+    }
+    const qint64 savedCount = count();
+    const double last = m_lastX;
+    close();
+    m_file = replacement;
+    m_flushedCount = savedCount;
+    m_lastX = last;
+    m_error.clear();
     return true;
 }
 
 bool SampleArchive::flush()
 {
-    m_error.clear();
-
-    const qint64 pending = pendingCount();
-    if (pending == 0)
+    if (m_pending.isEmpty())
         return true;
-
-    if (!writeSamples(m_pending))
+    if (!m_file || m_readOnly)
+    {
+        m_error = QStringLiteral("采集会话不可写");
         return false;
-
-    m_flushedCount += pending;
+    }
+    if (!m_file->seek(headerBytes + m_flushedCount * recordBytes()))
+    {
+        m_error = m_file->errorString();
+        return false;
+    }
+    QDataStream out(m_file);
+    configure(out);
+    for (double v : m_pending)
+        out << v;
+    if (out.status() != QDataStream::Ok || !m_file->flush())
+    {
+        m_error = QStringLiteral("保存会话失败：%1").arg(m_file->errorString());
+        return false;
+    }
+    m_flushedCount += pendingCount();
     m_pending.clear();
+    m_error.clear();
     return true;
 }
 
@@ -125,9 +247,9 @@ bool SampleArchive::readRecord(QDataStream &in, double &x)
     in >> x;
     for (int c = 0; c < m_channelCount; ++c)
         in >> m_readValues[c];
-
-    if (in.status() != QDataStream::Ok) {
-        m_error = QStringLiteral("读取采样缓冲失败");
+    if (in.status() != QDataStream::Ok || !qIsFinite(x) || x < 0)
+    {
+        m_error = QStringLiteral("读取会话数据失败");
         return false;
     }
     return true;
@@ -135,96 +257,52 @@ bool SampleArchive::readRecord(QDataStream &in, double &x)
 
 bool SampleArchive::readSampleAt(qint64 index, double &x)
 {
-    if (!m_file || !m_file->isOpen()) {
-        m_error = QStringLiteral("采样缓冲文件不可用");
+    if (!m_file || !m_file->seek(headerBytes + index * recordBytes()))
+    {
+        m_error = QStringLiteral("无法定位会话记录");
         return false;
     }
-    if (!m_file->seek(index * recordBytes())) {
-        m_error = m_file->errorString();
-        return false;
-    }
-
     QDataStream in(m_file);
-    in.setByteOrder(QDataStream::LittleEndian);
-    in.setFloatingPointPrecision(QDataStream::DoublePrecision);
+    configure(in);
     return readRecord(in, x);
 }
 
-bool SampleArchive::forEachSample(
-    const std::function<bool(double x, const double *values)> &fn)
+bool SampleArchive::forEachSample(const std::function<bool(double, const double *)> &fn)
 {
-    if (!flush())
-        return false;
-
-    if (m_flushedCount == 0)
-        return true;
-
-    if (!m_file || !m_file->isOpen()) {
-        m_error = QStringLiteral("采样缓冲文件不可用");
-        return false;
-    }
-    if (!m_file->seek(0)) {
-        m_error = m_file->errorString();
-        return false;
-    }
-
-    QDataStream in(m_file);
-    in.setByteOrder(QDataStream::LittleEndian);
-    in.setFloatingPointPrecision(QDataStream::DoublePrecision);
-
-    for (qint64 i = 0; i < m_flushedCount; ++i) {
-        double x = 0.0;
-        if (!readRecord(in, x))
-            return false;
-        if (!fn(x, m_readValues.constData()))
-            break;
-    }
-    return true;
+    return forEachSampleInRange(0, std::numeric_limits<double>::max(), fn);
 }
 
-bool SampleArchive::forEachSampleInRange(
-    double xMin, double xMax,
-    const std::function<bool(double x, const double *values)> &fn)
+bool SampleArchive::forEachSampleInRange(double xMin, double xMax,
+                                         const std::function<bool(double, const double *)> &fn)
 {
     if (!flush())
         return false;
-
-    if (m_flushedCount == 0)
+    if (!m_flushedCount)
         return true;
-
-    if (!m_file || !m_file->isOpen()) {
-        m_error = QStringLiteral("采样缓冲文件不可用");
-        return false;
-    }
-
-    // 记录是定长的并且按 x 递增写入，二分找第一个 x >= xMin 的记录
-    qint64 lo = 0;
-    qint64 hi = m_flushedCount;
-    while (lo < hi) {
+    qint64 lo = 0, hi = m_flushedCount;
+    while (lo < hi)
+    {
         const qint64 mid = lo + (hi - lo) / 2;
-        double mx = 0.0;
-        if (!readSampleAt(mid, mx))
+        double x;
+        if (!readSampleAt(mid, x))
             return false;
-        if (mx < xMin)
+        if (x < xMin)
             lo = mid + 1;
         else
             hi = mid;
     }
-
     if (lo >= m_flushedCount)
         return true;
-
-    if (!m_file->seek(lo * recordBytes())) {
+    if (!m_file->seek(headerBytes + lo * recordBytes()))
+    {
         m_error = m_file->errorString();
         return false;
     }
-
     QDataStream in(m_file);
-    in.setByteOrder(QDataStream::LittleEndian);
-    in.setFloatingPointPrecision(QDataStream::DoublePrecision);
-
-    for (qint64 i = lo; i < m_flushedCount; ++i) {
-        double x = 0.0;
+    configure(in);
+    for (qint64 i = lo; i < m_flushedCount; ++i)
+    {
+        double x;
         if (!readRecord(in, x))
             return false;
         if (x > xMax)
@@ -235,19 +313,72 @@ bool SampleArchive::forEachSampleInRange(
     return true;
 }
 
+qint64 SampleArchive::boundIndex(double time, bool afterEqual)
+{
+    qint64 lo = 0, hi = m_flushedCount;
+    while (lo < hi)
+    {
+        const qint64 mid = lo + (hi - lo) / 2;
+        double x;
+        if (!readSampleAt(mid, x)) return -1;
+        if (x < time || (afterEqual && x == time)) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}
+
+qint64 SampleArchive::countInRange(double lower, double upper)
+{
+    if (!qIsFinite(lower) || !qIsFinite(upper) || lower < 0 || upper < lower)
+    {
+        m_error = QStringLiteral("时间区间必须有限、非负且起点不晚于终点");
+        return -1;
+    }
+    if (!flush()) return -1;
+    const auto first = boundIndex(lower, false);
+    if (first < 0) return -1;
+    const auto end = boundIndex(upper, true);
+    return end < 0 ? -1 : end - first;
+}
+
+bool SampleArchive::nearestSample(double time, double &sampleTime, QVector<double> &values)
+{
+    if (!qIsFinite(time) || time < 0)
+    {
+        m_error = QStringLiteral("定位时间必须有限且非负");
+        return false;
+    }
+    if (!flush()) return false;
+    if (!m_flushedCount)
+    {
+        m_error = QStringLiteral("会话没有采样数据");
+        return false;
+    }
+    qint64 index = boundIndex(time, false);
+    if (index < 0) return false;
+    if (index == m_flushedCount) --index;
+    else if (index > 0)
+    {
+        double before, after;
+        if (!readSampleAt(index - 1, before) || !readSampleAt(index, after)) return false;
+        if (time - before <= after - time) --index;
+    }
+    if (!readSampleAt(index, sampleTime)) return false;
+    values = m_readValues;
+    return true;
+}
+
 bool SampleArchive::lastX(double &x) const
 {
-    if (count() == 0)
+    if (!count())
         return false;
     x = m_lastX;
     return true;
 }
-
 QString SampleArchive::bufferFileName() const
 {
     return m_file ? m_file->fileName() : QString();
 }
-
 qint64 SampleArchive::bufferSize() const
 {
     return m_file ? m_file->size() : 0;

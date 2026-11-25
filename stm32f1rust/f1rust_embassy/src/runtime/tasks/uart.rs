@@ -29,7 +29,7 @@ pub(crate) fn start(
     link
 }
 
-#[embassy_executor::task]
+#[embassy_executor::task(pool_size = config::UART_TASK_POOL_SIZE)]
 async fn uart_tx_task(mut tx: UartTx<'static, Async>, uart: &'static UartLink) {
     loop {
         // 局部 message 在 DMA 完成前一直有效；本任务串行发送，消息不会交错。
@@ -45,7 +45,7 @@ async fn uart_tx_task(mut tx: UartTx<'static, Async>, uart: &'static UartLink) {
     }
 }
 
-#[embassy_executor::task]
+#[embassy_executor::task(pool_size = config::UART_TASK_POOL_SIZE)]
 async fn uart_rx_task(mut rx: RingBufferedUartRx<'static>, uart: &'static UartLink) {
     let mut buffer = [0; config::UART_RX_CHUNK_BYTES];
     loop {

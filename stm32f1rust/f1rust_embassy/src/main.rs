@@ -8,5 +8,6 @@ mod runtime;
 /// Embassy 创建线程模式执行器，main 本身就是第一个异步任务。
 #[embassy_executor::main]
 async fn main(spawner: embassy_executor::Spawner) {
-    runtime::app::App::init(spawner).run(spawner).await
+    let devices = runtime::board::init(spawner);
+    runtime::app::run(devices, spawner).await
 }
