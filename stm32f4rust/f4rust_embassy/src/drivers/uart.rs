@@ -3,12 +3,12 @@
 
 use crate::runtime::config;
 use core::{
+    cell::Cell,
     fmt::{self, Write},
-    sync::atomic::{AtomicU32, Ordering},
 };
 use embassy_stm32::usart::Error;
 use embassy_sync::{
-    blocking_mutex::raw::CriticalSectionRawMutex,
+    blocking_mutex::{Mutex, raw::CriticalSectionRawMutex},
     channel::{Channel, TrySendError},
 };
 use heapless::Vec;
@@ -24,7 +24,7 @@ macro_rules! init_uart {
         static LINK: ::static_cell::StaticCell<$crate::drivers::uart::UartLink> =
             ::static_cell::StaticCell::new();
 
-        $crate::runtime::tasks::uart::start(
+        $crate::runtime::tasks::uart_task::start(
             spawner,
             uart,
             RX_BUFFER.init_with(|| [0; $rx_buffer_bytes]),
@@ -37,12 +37,13 @@ pub(crate) use init_uart;
 
 /// 格式化文本并非阻塞入队，返回 Result<(), TrySendFmtError>，不自动添加换行。
 /// 例如：uart_print!(uart1, "tick {}ms\r\n", milliseconds)。
+#[allow(unused)]
 macro_rules! uart_print {
     ($uart:expr, $($args:tt)*) => {
         ($uart).try_send_fmt(::core::format_args!($($args)*))
     };
 }
-
+#[allow(unused)]
 pub(crate) use uart_print;
 
 pub type TxMessage = Vec<u8, { config::UART_TX_MESSAGE_BYTES }>;
@@ -66,16 +67,19 @@ pub enum RxEvent {
     Error(Error),
 }
 
-/// HAL 报告的错误事件次数，不是硬件上每个错误字节的精确计数。
-/// 各字段独立读取；RX 溢出不能据此推算丢失字节数。
+/// 串口统计快照。RX 计数反映 HAL 上报的事件，溢出次数无法推算丢失字节数。
 #[derive(Debug, Clone, Copy, Default)]
 pub struct UartStats {
+    pub rx_error_events: u32,
+    pub last_rx_error: Option<&'static str>,
     pub rx_overrun: u32,
     pub rx_framing: u32,
     pub rx_parity: u32,
     pub rx_noise: u32,
     pub rx_other: u32,
     pub tx_errors: u32,
+    /// 软件发送队列拒绝非阻塞发送的次数。
+    pub tx_queue_full: u32,
 }
 
 /// 初始化后直接将共享引用传给业务任务，队列和计数器始终属于同一个串口。
@@ -85,12 +89,7 @@ pub struct UartLink {
         Channel<CriticalSectionRawMutex, TxMessage, { config::UART_TX_QUEUE_CAPACITY }>,
     pub(crate) rx_queue:
         Channel<CriticalSectionRawMutex, RxEvent, { config::UART_RX_QUEUE_CAPACITY }>,
-    rx_overrun: AtomicU32,
-    rx_framing: AtomicU32,
-    rx_parity: AtomicU32,
-    rx_noise: AtomicU32,
-    rx_other: AtomicU32,
-    tx_errors: AtomicU32,
+    stats: Mutex<CriticalSectionRawMutex, Cell<UartStats>>,
 }
 
 impl UartLink {
@@ -99,12 +98,17 @@ impl UartLink {
         Self {
             tx_queue: Channel::new(),
             rx_queue: Channel::new(),
-            rx_overrun: AtomicU32::new(0),
-            rx_framing: AtomicU32::new(0),
-            rx_parity: AtomicU32::new(0),
-            rx_noise: AtomicU32::new(0),
-            rx_other: AtomicU32::new(0),
-            tx_errors: AtomicU32::new(0),
+            stats: Mutex::new(Cell::new(UartStats {
+                rx_error_events: 0,
+                last_rx_error: None,
+                rx_overrun: 0,
+                rx_framing: 0,
+                rx_parity: 0,
+                rx_noise: 0,
+                rx_other: 0,
+                tx_errors: 0,
+                tx_queue_full: 0,
+            })),
         }
     }
 
@@ -123,7 +127,15 @@ impl UartLink {
 
     /// 非阻塞地整条入队；队列满时通过错误返回原消息。
     pub fn try_send(&self, message: TxMessage) -> Result<(), TrySendError<TxMessage>> {
-        self.tx_queue.try_send(message)
+        let result = self.tx_queue.try_send(message);
+        if result.is_err() {
+            self.stats.lock(|cell| {
+                let mut stats = cell.get();
+                stats.tx_queue_full = stats.tx_queue_full.saturating_add(1);
+                cell.set(stats);
+            });
+        }
+        result
     }
 
     /// 格式化后非阻塞地整条入队，不使用堆分配；失败时不会发送部分文本。
@@ -145,28 +157,31 @@ impl UartLink {
     }
 
     pub fn stats(&self) -> UartStats {
-        UartStats {
-            rx_overrun: self.rx_overrun.load(Ordering::Relaxed),
-            rx_framing: self.rx_framing.load(Ordering::Relaxed),
-            rx_parity: self.rx_parity.load(Ordering::Relaxed),
-            rx_noise: self.rx_noise.load(Ordering::Relaxed),
-            rx_other: self.rx_other.load(Ordering::Relaxed),
-            tx_errors: self.tx_errors.load(Ordering::Relaxed),
-        }
+        self.stats.lock(Cell::get)
     }
 
     pub(crate) fn record_tx_error(&self) {
-        self.tx_errors.fetch_add(1, Ordering::Relaxed);
+        self.stats.lock(|cell| {
+            let mut stats = cell.get();
+            stats.tx_errors = stats.tx_errors.saturating_add(1);
+            cell.set(stats);
+        });
     }
 
     pub(crate) fn record_rx_error(&self, error: Error) {
-        let counter = match error {
-            Error::Overrun => &self.rx_overrun,
-            Error::Framing => &self.rx_framing,
-            Error::Parity => &self.rx_parity,
-            Error::Noise => &self.rx_noise,
-            _ => &self.rx_other,
-        };
-        counter.fetch_add(1, Ordering::Relaxed);
+        self.stats.lock(|cell| {
+            let mut stats = cell.get();
+            let (name, count) = match error {
+                Error::Overrun => ("overrun", &mut stats.rx_overrun),
+                Error::Framing => ("framing", &mut stats.rx_framing),
+                Error::Parity => ("parity", &mut stats.rx_parity),
+                Error::Noise => ("noise", &mut stats.rx_noise),
+                _ => ("other", &mut stats.rx_other),
+            };
+            *count = count.saturating_add(1);
+            stats.rx_error_events = stats.rx_error_events.saturating_add(1);
+            stats.last_rx_error = Some(name);
+            cell.set(stats);
+        });
     }
 }

@@ -89,12 +89,8 @@ SerialPanel::SerialPanel(QWidget *parent, PortProvider ports, const QString &set
             return devices;
         };
     auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(8, 8, 8, 8);
-    layout->setSpacing(8);
-
-    auto *title = new QLabel(m_settingsGroup == QStringLiteral("serial") ? tr("串口配置") : tr("UART 配置"), this);
-    title->setObjectName("panelTitle");
-    layout->addWidget(title);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(5);
 
     m_serial = new QSerialPort(this);
 
@@ -120,6 +116,7 @@ SerialPanel::SerialPanel(QWidget *parent, PortProvider ports, const QString &set
     m_openBtn->setMinimumHeight(28);
 
     m_stateLabel = new QLabel(this);
+    m_stateLabel->setWordWrap(true);
     QFont stateFont = m_stateLabel->font();
     stateFont.setBold(true);
     m_stateLabel->setFont(stateFont);
@@ -129,7 +126,7 @@ SerialPanel::SerialPanel(QWidget *parent, PortProvider ports, const QString &set
     auto *form = new QFormLayout;
     form->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
     form->setHorizontalSpacing(10);
-    form->setVerticalSpacing(8);
+    form->setVerticalSpacing(5);
 
     // 端口行：下拉框 + 刷新，下面跟一行设备描述
     auto *portRow = new QWidget(this);
@@ -169,15 +166,16 @@ SerialPanel::SerialPanel(QWidget *parent, PortProvider ports, const QString &set
     buttonRow->addWidget(m_openBtn, 1);
     layout->addLayout(buttonRow);
 
-    layout->addWidget(m_stateLabel);
+    auto *deviceRow = new QHBoxLayout;
+    deviceRow->addWidget(m_stateLabel, 1);
+    m_deviceId = new QLabel(this);
+    m_deviceId->setObjectName("deviceId");
+    deviceRow->addWidget(m_deviceId);
+    layout->addLayout(deviceRow);
     m_autoReconnectCheck = new QCheckBox(tr("异常断开后自动重连"), this);
     m_autoReconnectCheck->setObjectName("autoReconnectCheck");
     m_autoReconnectCheck->setToolTip(tr("仅在本次已连接设备异常断开后重试；手动断开或取消后不再重试。无序列号的设备仅尝试原端口。"));
     layout->addWidget(m_autoReconnectCheck);
-
-    m_deviceId = new QLabel(this);
-    m_deviceId->setObjectName("deviceId");
-    layout->addWidget(m_deviceId);
 
     auto *traffic = new QWidget(this);
     auto *trafficLayout = new QVBoxLayout(traffic);

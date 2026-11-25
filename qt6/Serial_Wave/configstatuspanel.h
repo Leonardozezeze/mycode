@@ -26,7 +26,6 @@ public:
 private:
     QWidget* createConfigWidget();
     QWidget* createSensorConfig();
-    QWidget* createStatusWidget();
 
     SerialPanel    *m_serialPanel    = nullptr;
     CanPanel       *m_canPanel       = nullptr;

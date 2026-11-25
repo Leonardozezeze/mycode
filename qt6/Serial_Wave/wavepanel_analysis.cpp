@@ -29,7 +29,7 @@ const char *channelNames[] = {"破碎率 (%)", "含杂率 (%)", "实际转速 (r
 void WavePanel::setupAnalysisTools(QVBoxLayout *layout)
 {
     auto *bar = new QHBoxLayout;
-    bar->setContentsMargins(8, 0, 8, 0);
+    bar->setSpacing(6);
     m_measureBtn = new QPushButton(tr("A/B 测量"), this);
     m_measureBtn->setObjectName("measureModeButton");
     m_measureBtn->setCheckable(true);
@@ -50,10 +50,13 @@ void WavePanel::setupAnalysisTools(QVBoxLayout *layout)
     m_jumpTime->setRange(0, 1e12);
     m_jumpTime->setDecimals(3);
     m_jumpTime->setSuffix(tr(" 秒"));
+    m_jumpTime->setFixedWidth(m_jumpTime->fontMetrics().horizontalAdvance(tr("000000.000 秒")) + 30);
     m_jumpTime->setToolTip(tr("输入本次会话的主机接收时间；跳转后冻结显示，记录继续。"));
     auto *jump = new QPushButton(tr("跳转"), this);
     jump->setObjectName("jumpTimeButton");
-    for (auto *button : {m_measureBtn, clear, m_measureDetailsBtn, m_exportSelectionBtn, whole})
+    bar->addWidget(whole);
+    bar->addSpacing(4);
+    for (auto *button : {m_measureBtn, clear, m_measureDetailsBtn, m_exportSelectionBtn})
         bar->addWidget(button);
     bar->addStretch();
     bar->addWidget(new QLabel(tr("定位时间"), this));

@@ -50,8 +50,8 @@ StatusPanel::StatusPanel(QWidget *parent) : QWidget(parent)
                                  "QLabel#statValue { color: #e0e0e0; font-weight: 600; }"));
 
     auto *grid = new QGridLayout(this);
-    grid->setContentsMargins(8, 8, 8, 8); // 与 SerialPanel / RecordingPanel 对齐
-    grid->setSpacing(8);
+    grid->setContentsMargins(10, 8, 10, 8);
+    grid->setSpacing(5);
     for (int col = 0; col < 4; ++col)
         grid->setColumnStretch(col, 1);
 
@@ -62,14 +62,13 @@ StatusPanel::StatusPanel(QWidget *parent) : QWidget(parent)
     title->setFont(titleFont);
     grid->addWidget(title, 0, 0, 1, 4);
 
-    // 第一排：破碎率 / 转速 / 运行状态
+    // 当前值在上，均值及转速参照值在下。
     grid->addWidget(createCard(tr("当前破碎率"), &m_lblCrushRate), 1, 0);
-    grid->addWidget(createCard(tr("平均破碎率"), &m_lblCrushAvg), 1, 1);
+    grid->addWidget(createCard(tr("当前含杂率"), &m_lblImpurityRate), 1, 1);
     grid->addWidget(createCard(tr("电机转速"), &m_lblRpm), 1, 2);
     grid->addWidget(createCard(tr("运行状态"), &m_lblRunState), 1, 3);
 
-    // 第二排：含杂率 / 电机
-    grid->addWidget(createCard(tr("当前含杂率"), &m_lblImpurityRate), 2, 0);
+    grid->addWidget(createCard(tr("平均破碎率"), &m_lblCrushAvg), 2, 0);
     grid->addWidget(createCard(tr("平均含杂率"), &m_lblImpurityAvg), 2, 1);
     grid->addWidget(createCard(tr("设定转速"), &m_lblRpmTarget), 2, 2);
     grid->addWidget(createCard(tr("转速偏差"), &m_lblRpmError), 2, 3);
@@ -118,8 +117,8 @@ QFrame *StatusPanel::createCard(const QString &title, QLabel **valueLabel)
     card->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     auto *layout = new QVBoxLayout(card);
-    layout->setContentsMargins(8, 8, 8, 8);
-    layout->setSpacing(4);
+    layout->setContentsMargins(8, 6, 8, 6);
+    layout->setSpacing(3);
 
     auto *titleLabel = new QLabel(title, card);
     titleLabel->setObjectName("statusCardTitle");

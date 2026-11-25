@@ -30,6 +30,7 @@ protected:
     void showEvent(QShowEvent *event) override;
 
 private:
+    void sizeConsoleDock();
     void autoExportRecording();
     void appendDeviceText(const QByteArray &bytes);
     void flushDeviceText();

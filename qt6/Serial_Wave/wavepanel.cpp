@@ -12,6 +12,7 @@
 #include <QSplitter>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFrame>
 #include <QDir>
 #include <QSettings>
 #include <QStandardPaths>
@@ -66,8 +67,13 @@ WavePanel::WavePanel(QWidget *parent)
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(4);
+    auto *controls = new QFrame(this);
+    controls->setProperty("workspaceCard", true);
+    auto *controlsLayout = new QVBoxLayout(controls);
+    controlsLayout->setContentsMargins(8, 3, 8, 3);
+    controlsLayout->setSpacing(3);
     auto *bar = new QHBoxLayout;
-    bar->setContentsMargins(8, 0, 8, 0);
+    bar->setSpacing(6);
     auto *title = new QLabel(tr("波形对比"), this);
     title->setObjectName("panelTitle");
     bar->addWidget(title);
@@ -88,21 +94,24 @@ WavePanel::WavePanel(QWidget *parent)
     auto *channels = new QPushButton(tr("通道与坐标"), this);
     channels->setObjectName("channelSettingsButton");
     connect(channels, &QPushButton::clicked, this, &WavePanel::configureChannels);
-    for (auto *button : {m_pauseBtn, latest, m_autoYBtn})
+    for (auto *button : {m_pauseBtn, latest})
         bar->addWidget(button);
     bar->addWidget(m_windowCombo);
-    bar->addStretch();
-    bar->addWidget(channels);
-    bar->addWidget(stats);
-    bar->addWidget(png);
-    layout->addLayout(bar);
-    auto *sessionBar = new QHBoxLayout;
-    sessionBar->setContentsMargins(8, 0, 8, 0);
+    bar->addWidget(m_autoYBtn);
     m_sessionInfo = new QLabel(tr("连接设备后自动开始记录，也可手动开始"), this);
     m_sessionInfo->setObjectName("hintText");
+    m_sessionInfo->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     m_sessionInfo->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    bar->addWidget(m_sessionInfo, 1);
+    controlsLayout->addLayout(bar);
+
+    auto *sessionBar = new QHBoxLayout;
+    sessionBar->setSpacing(6);
     m_openSessionBtn = new QPushButton(tr("打开会话…"), this);
-    sessionBar->addWidget(m_sessionInfo, 1);
+    sessionBar->addWidget(channels);
+    sessionBar->addWidget(stats);
+    sessionBar->addWidget(png);
+    sessionBar->addStretch();
     m_noteBtn = new QPushButton(tr("添加备注"), this);
     m_noteBtn->setObjectName("addSessionNoteButton");
     m_noteBtn->setEnabled(false);
@@ -113,8 +122,9 @@ WavePanel::WavePanel(QWidget *parent)
     sessionBar->addWidget(m_openSessionBtn);
     connect(m_noteBtn, &QPushButton::clicked, this, &WavePanel::addNoteDialog);
     connect(m_eventsBtn, &QPushButton::clicked, this, &WavePanel::showEvents);
-    layout->addLayout(sessionBar);
-    setupAnalysisTools(layout);
+    controlsLayout->addLayout(sessionBar);
+    setupAnalysisTools(controlsLayout);
+    layout->addWidget(controls);
     auto *splitter = new QSplitter(Qt::Vertical, this);
     splitter->setObjectName("waveSplitter");
     splitter->setChildrenCollapsible(false);
@@ -123,7 +133,7 @@ WavePanel::WavePanel(QWidget *parent)
         auto *plot = new QCustomPlot(splitter);
         plot->setObjectName(p == 0 ? "qualityPlot" : p == 1 ? "speedPlot" : "actuatorPlot");
         m_plots[p] = plot;
-        plot->setMinimumHeight(150);
+        plot->setMinimumHeight(90);
         plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
         plot->axisRect()->setRangeZoom(Qt::Horizontal);
         plot->axisRect()->setRangeDrag(Qt::Horizontal);
@@ -140,7 +150,10 @@ WavePanel::WavePanel(QWidget *parent)
             axis->grid()->setZeroLinePen(QPen(THEME_ZERO_LINE));
         }
         plot->yAxis->setLabel(tr(axisNames[p]));
-        plot->xAxis->setLabel(tr("主机接收时间 (s)"));
+        if (p == waveformPlotCount - 1)
+            plot->xAxis->setLabel(tr("主机接收时间 (s)"));
+        else
+            plot->xAxis->setTickLabels(false);
         plot->xAxis->setRange(0, m_windowSec);
         const double lo = settings.value(QString("wave/y%1Min").arg(p), 0).toDouble();
         const double hi = settings.value(QString("wave/y%1Max").arg(p), defaultYMax[p]).toDouble();
@@ -275,6 +288,9 @@ WavePanel::WavePanel(QWidget *parent)
                     }
                 });
     }
+    auto *axisMargins = new QCPMarginGroup(m_plots[0]);
+    for (auto *plot : m_plots)
+        plot->axisRect()->setMarginGroup(QCP::msLeft | QCP::msRight, axisMargins);
     createMeasurementItems();
     layout->addWidget(splitter, 1);
     for (int p = 0; p < waveformPlotCount; ++p)
@@ -593,8 +609,7 @@ void WavePanel::resetPlotLayout()
 {
     if (auto *splitter = findChild<QSplitter *>("waveSplitter"))
     {
-        const int height = qMax(150, splitter->height() / waveformPlotCount);
-        splitter->setSizes({height, height, height});
+        splitter->setSizes({1, 1, 1});
     }
 }
 

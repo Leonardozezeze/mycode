@@ -355,6 +355,15 @@ CanCommandBar::CanCommandBar(QWidget *parent) : QWidget(parent)
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(5);
     auto *form = new QFormLayout;
+    const QString defaultSendId = formatStandardCanId(defaultCanCommandId).mid(2);
+    const QString savedSendId =
+        QSettings().value(QStringLiteral("command/canSendId"), defaultSendId).toString();
+    m_sendId = new QLineEdit(parseStandardHexCanId(savedSendId) ? savedSendId : defaultSendId, this);
+    m_sendId->setObjectName("canSendId");
+    m_sendId->setPlaceholderText(tr("十六进制 000～7FF"));
+    m_sendId->setToolTip(tr("填写目标设备的标准帧 ID，例如 401 或 0x401。"));
+    form->addRow(tr("发送 ID"), m_sendId);
+
     m_command = new QLineEdit(this);
     m_command->setObjectName("canCommandNumber");
     m_command->setPlaceholderText(tr("例如 0x01 或十进制 1"));
@@ -386,6 +395,7 @@ CanCommandBar::CanCommandBar(QWidget *parent) : QWidget(parent)
     m_feedback->setObjectName("canSendFeedback");
     m_feedback->setWordWrap(true);
     layout->addWidget(m_feedback);
+    connect(m_sendId, &QLineEdit::textChanged, this, &CanCommandBar::updateEditor);
     connect(m_command, &QLineEdit::textChanged, this, &CanCommandBar::updateEditor);
     connect(m_parameters, &QLineEdit::textChanged, this, &CanCommandBar::updateEditor);
     connect(m_send, &QPushButton::clicked, this, &CanCommandBar::submit);
@@ -433,11 +443,14 @@ QByteArray CanCommandBar::commandPayload(QString &error, qsizetype *parameterCou
 
 void CanCommandBar::updateEditor()
 {
+    const auto id = parseStandardHexCanId(m_sendId->text());
     QString error;
     qsizetype parameterCount = -1;
     const auto payload = commandPayload(error, &parameterCount);
-    m_send->setEnabled(m_connected && !payload.isEmpty());
-    auto feedback = tr("发送 ID 0x650");
+    if (!id && error.isEmpty())
+        error = tr("发送 ID 须在十六进制 000～7FF 范围内。");
+    m_send->setEnabled(m_connected && id && !payload.isEmpty());
+    auto feedback = id ? tr("发送 ID %1").arg(formatStandardCanId(*id)) : tr("发送 ID --");
     if (parameterCount >= 0)
     {
         feedback += tr(" · 参数 %1/%2 字节").arg(parameterCount).arg(maxClassicCanPayload - 1);
@@ -463,10 +476,16 @@ void CanCommandBar::submit()
 {
     if (!m_connected)
         return;
+    const auto id = parseStandardHexCanId(m_sendId->text());
+    if (!id)
+        return;
     QString error;
     const auto payload = commandPayload(error);
     if (!payload.isEmpty())
-        emit commandSubmitted(payload);
+    {
+        QSettings().setValue(QStringLiteral("command/canSendId"), m_sendId->text().trimmed());
+        emit commandSubmitted(*id, payload);
+    }
 }
 
 void CanCommandBar::openNumberConverter()

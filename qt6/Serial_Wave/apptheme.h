@@ -50,6 +50,7 @@ QPushButton {
 QPushButton:hover   { background: #383838; }
 QPushButton:pressed { background: #242424; }
 QPushButton:disabled { color: #777777; }
+QPushButton[compactAction="true"] { padding: 4px 8px; }
 QPushButton:checked {
     background: #0d6efd;
     border-color: #0d6efd;
@@ -81,6 +82,36 @@ QComboBox QAbstractItemView {
     selection-background-color: #0d6efd;
 }
 QCheckBox { spacing: 6px; }
+
+QWidget[workspaceCard="true"] {
+    background: #232323;
+    border: 1px solid #353535;
+    border-radius: 7px;
+}
+
+QTabWidget::pane { border: 0; }
+QTabBar::tab {
+    color: #b7bdc8;
+    background: #292929;
+    border: 1px solid #353535;
+    border-radius: 4px;
+    margin-right: 3px;
+    padding: 4px 9px;
+}
+QTabBar::tab:hover { background: #323232; }
+QTabBar::tab:selected {
+    color: #e7efff;
+    background: #263a59;
+    border-color: #4470a8;
+}
+QTabBar#consoleTabs::tab {
+    padding: 7px 12px;
+    font-weight: 600;
+}
+QDockWidget#consoleDock::title {
+    background: #252525;
+    padding: 6px 8px;
+}
 
 QLabel#panelTitle {
     color: #e0e0e0;

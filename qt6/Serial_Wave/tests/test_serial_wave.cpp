@@ -19,6 +19,7 @@
 #include <QCheckBox>
 #include <QMenu>
 #include <QTableView>
+#include <QTabBar>
 #include <QDialog>
 #include <QDoubleSpinBox>
 #include <QDialogButtonBox>
@@ -51,6 +52,7 @@
 #include "statuspanel.h"
 #include "recordingpanel.h"
 #include "commandbar.h"
+#include "uartterminal.h"
 #include "logpanel.h"
 #include "qcustomplot.h"
 #include "apptheme.h"
@@ -128,6 +130,7 @@ private slots:
         settings.setValue("command/keepInput", false);
         settings.remove("command/presets");
         settings.setValue("console/receiveMode", 0);
+        settings.remove("console/terminal");
         settings.setValue("connection/transport", "serial");
         settings.setValue("serial/autoReconnect", false);
         settings.remove("wave");
@@ -158,11 +161,13 @@ private slots:
     void canConsoleBuildsCommandAndParameters()
     {
         CanCommandBar commands;
+        auto *id = commands.findChild<QLineEdit *>("canSendId");
         auto *number = commands.findChild<QLineEdit *>("canCommandNumber");
         auto *parameters = commands.findChild<QLineEdit *>("canCommandParameters");
         auto *send = commands.findChild<QPushButton *>("canSendButton");
         auto *feedback = commands.findChild<QLabel *>("canSendFeedback");
         QSignalSpy submitted(&commands, &CanCommandBar::commandSubmitted);
+        QCOMPARE(id->text(), QString("401"));
         parameters->setText("10 fF");
         QVERIFY(feedback->text().contains("参数 2/7 字节 · DLC 3"));
         number->setText("0x01");
@@ -194,24 +199,66 @@ private slots:
         parameters->setText("AA 55");
         send->click();
         QCOMPARE(submitted.count(), 1);
-        QCOMPARE(submitted[0][0].toByteArray(), QByteArray::fromHex("01aa55"));
+        QCOMPARE(submitted[0][0].toUInt(), quint32(0x401));
+        QCOMPARE(submitted[0][1].toByteArray(), QByteArray::fromHex("01aa55"));
         QCOMPARE(parameters->text(), QString("AA 55"));
 
+        for (const auto &invalidId : {"", "800", "0x800", "6G1", "+651", "651, 652"})
+        {
+            id->setText(invalidId);
+            QVERIFY(!send->isEnabled());
+            QTest::keyClick(parameters, Qt::Key_Return);
+        }
+        QCOMPARE(submitted.count(), 1);
+        id->setText("0x651");
+        QVERIFY(feedback->text().contains("发送 ID 0x651"));
         number->setText("255");
         parameters->setText("00112233445566");
         QVERIFY(feedback->text().contains("参数 7/7 字节 · DLC 8"));
         QTest::keyClick(parameters, Qt::Key_Return);
         QCOMPARE(submitted.count(), 2);
-        QCOMPARE(submitted[1][0].toByteArray(), QByteArray::fromHex("ff00112233445566"));
+        QCOMPARE(submitted[1][0].toUInt(), quint32(0x651));
+        QCOMPARE(submitted[1][1].toByteArray(), QByteArray::fromHex("ff00112233445566"));
 
+        id->setText("7FF");
         number->setText("0");
         parameters->clear();
         QVERIFY(feedback->text().contains("参数 0/7 字节 · DLC 1"));
         send->click();
         QCOMPARE(submitted.count(), 3);
-        QCOMPARE(submitted[2][0].toByteArray(), QByteArray(1, '\0'));
+        QCOMPARE(submitted[2][0].toUInt(), quint32(0x7FF));
+        QCOMPARE(submitted[2][1].toByteArray(), QByteArray(1, '\0'));
+        id->setText("0");
+        send->click();
+        QCOMPARE(submitted.count(), 4);
+        QCOMPARE(submitted[3][0].toUInt(), quint32(0));
         commands.setConnected(false);
         QVERIFY(!send->isEnabled());
+    }
+    void canConsoleRemembersLastSendId()
+    {
+        QSettings settings;
+        settings.remove("command/canSendId");
+        const auto cleanup = qScopeGuard([&] { settings.remove("command/canSendId"); });
+        {
+            CanCommandBar commands;
+            commands.setConnected(true);
+            auto *id = commands.findChild<QLineEdit *>("canSendId");
+            auto *number = commands.findChild<QLineEdit *>("canCommandNumber");
+            auto *parameters = commands.findChild<QLineEdit *>("canCommandParameters");
+            QCOMPARE(id->text(), QString("401"));
+            id->setText("7A1");
+            number->setText("0x02");
+            parameters->setText("AA");
+            commands.findChild<QPushButton *>("canSendButton")->click();
+        }
+        CanCommandBar restored;
+        QCOMPARE(restored.findChild<QLineEdit *>("canSendId")->text(), QString("7A1"));
+
+        // 配置里的非法值回退到默认 ID。
+        QSettings().setValue("command/canSendId", "800");
+        CanCommandBar fallback;
+        QCOMPARE(fallback.findChild<QLineEdit *>("canSendId")->text(), QString("401"));
     }
     void canNumberConverterFormatsParameterBytes()
     {
@@ -352,11 +399,12 @@ private slots:
         QVERIFY(QTime::fromString(lastReceive->text(), "HH:mm:ss.zzz").isValid());
 
         // 注入的是连接信号，底层套接字还没打开。失败时日志说明原因，不能记为已排队。
+        canCommands->findChild<QLineEdit *>("canSendId")->setText("7A1");
         auto *canData = canCommands->findChild<QLineEdit *>("canCommandParameters");
         canData->setText("00 01");
         canCommands->findChild<QPushButton *>("canSendButton")->click();
         QCOMPARE(canData->text(), QString("00 01"));
-        QTRY_VERIFY(log->toPlainText().contains("CAN 0x650 发送失败"));
+        QTRY_VERIFY(log->toPlainText().contains("CAN 0x7A1 发送失败"));
         const auto beforeDisconnect = wave->sessionEvents();
         QVERIFY(std::none_of(beforeDisconnect.begin(), beforeDisconnect.end(), [](const auto &event)
         { return event.type == "command"; }));
@@ -894,6 +942,60 @@ private slots:
         QCOMPARE(commandEvents.size(), 2);
         QVERIFY(commandEvents[0].contains("ping\r\n"));
         QVERIFY(commandEvents[1].contains("[HEX] AA 55 00 FF"));
+
+        auto *terminal = w.findChild<UartTerminal *>();
+        auto *terminalView = terminal->findChild<QPlainTextEdit *>("uartTerminalView");
+        auto *tabs = w.findChild<QTabBar *>("consoleTabs");
+        auto *commandPage = w.findChild<QWidget *>("consoleCommandPage");
+        auto *logPanel = w.findChild<LogPanel *>();
+        w.show();
+        w.findChild<QDockWidget *>("consoleDock")->show();
+        QCOMPARE(tabs->count(), 3);
+        QCOMPARE(tabs->tabText(1), QString("UART 终端"));
+        QCOMPARE(tabs->tabText(2), QString("CAN"));
+        tabs->setCurrentIndex(0);
+        QVERIFY(command->isVisible());
+        tabs->setCurrentIndex(1);
+        QVERIFY(commandPage->isHidden());
+        QTRY_VERIFY(terminalView->hasFocus());
+        logPanel->findChild<QComboBox *>("receiveLogMode")->setCurrentIndex(2);
+        const QByteArray shellOutput("\x1b[32mshell\x1b[0m> ");
+        QCOMPARE(::write(consoleMaster, shellOutput.constData(), shellOutput.size()), shellOutput.size());
+        QTRY_VERIFY(terminalView->toPlainText().endsWith("shell> "));
+        QVERIFY(!logPanel->findChild<QPlainTextEdit *>("logView")->toPlainText().contains("shell> "));
+
+        QTest::keyClicks(terminalView, "help");
+        QTest::keyClick(terminalView, Qt::Key_Return);
+        QTest::keyClick(terminalView, Qt::Key_Up);
+        QTest::keyClick(terminalView, Qt::Key_Tab);
+        QTest::keyClick(terminalView, Qt::Key_Backspace);
+        QTest::keyClick(terminalView, Qt::Key_C, Qt::ControlModifier);
+        QTest::keyClick(terminalView, Qt::Key_F, Qt::ControlModifier);
+        terminal->findChild<QComboBox *>("terminalEnter")->setCurrentText("CRLF");
+        terminal->findChild<QComboBox *>("terminalBackspace")->setCurrentText("BS");
+        QTest::keyClick(terminalView, Qt::Key_Return);
+        QTest::keyClick(terminalView, Qt::Key_Backspace);
+        QApplication::clipboard()->setText("one\r\ntwo\n");
+        QTest::keyClick(terminalView, Qt::Key_V, Qt::ControlModifier | Qt::ShiftModifier);
+        const QByteArray expectedKeys("help\r\x1b[A\t\x7f\x03\x06\r\n\bone\r\ntwo\r\n");
+        auto gotKeys = [&]
+        {
+            char bytes[128];
+            const auto count = ::read(consoleMaster, bytes, sizeof(bytes));
+            if (count > 0)
+                received.append(bytes, count);
+            return received.endsWith(expectedKeys);
+        };
+        QTRY_VERIFY_WITH_TIMEOUT(gotKeys(), 2000);
+        QCOMPARE(tabs->currentIndex(), 1);
+        QCOMPARE(wave->sampleCount(), 3);
+        w.findChild<QAction *>("searchLogAction")->trigger();
+        QCOMPARE(tabs->currentIndex(), 0);
+        QVERIFY(commandPage->isVisible());
+        QVERIFY(logPanel->findChild<QLineEdit *>("logSearch")->hasFocus());
+        tabs->setCurrentIndex(2);
+        QVERIFY(w.findChild<CanCommandBar *>()->isVisible());
+
         QVERIFY(QMetaObject::invokeMethod(serial, "onOpenClicked"));
         QVERIFY(!serial->isOpen());
         QVERIFY(!wave->isRecording());
@@ -906,6 +1008,40 @@ private slots:
 #else
         QSKIP("伪终端测试使用 Linux PTY。");
 #endif
+    }
+    void uartTerminalRendersFragmentedUtf8AndAnsi()
+    {
+        UartTerminal terminal;
+        auto *view = terminal.findChild<QPlainTextEdit *>("uartTerminalView");
+        terminal.setConnected(true);
+        terminal.receive("\x1b[3");
+        const auto utf8 = QStringLiteral("中文").toUtf8();
+        terminal.receive("2m" + utf8.left(2));
+        QVERIFY(view->toPlainText().isEmpty());
+        terminal.receive(utf8.mid(2) + "\x1b[0m\r\nprogress 100%");
+        QCOMPARE(view->toPlainText(), QStringLiteral("中文\nprogress 100%"));
+        QTextCursor cursor(view->document());
+        cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
+        QCOMPARE(cursor.charFormat().foreground().color(), QColor(0x98c379));
+        terminal.receive("\r10%\x1b[K\r\nabc\bZ");
+        QCOMPARE(view->toPlainText(), QStringLiteral("中文\n10%\nabZ"));
+        terminal.receive("\x1b]0;ignored title\a\x1b[2J> ");
+        QCOMPARE(view->toPlainText(), QString("> "));
+
+        QSignalSpy submitted(&terminal, &UartTerminal::inputReady);
+        terminal.receive("\x1b[?1h");
+        QTest::keyClick(view, Qt::Key_Up);
+        terminal.receive("\x1b[?1l");
+        QTest::keyClick(view, Qt::Key_Up);
+        QCOMPARE(submitted.count(), 2);
+        QCOMPARE(submitted[0][0].toByteArray(), QByteArray("\x1bOA"));
+        QCOMPARE(submitted[1][0].toByteArray(), QByteArray("\x1b[A"));
+        terminal.setConnected(false);
+        QTest::keyClick(view, Qt::Key_C, Qt::ControlModifier);
+        QCOMPARE(submitted.count(), 2);
+        QVERIFY(view->toPlainText().startsWith("> "));
+        terminal.setConnected(true);
+        QVERIFY(view->toPlainText().isEmpty());
     }
     void completedExportStillBlocksUntilResultHandled()
     {

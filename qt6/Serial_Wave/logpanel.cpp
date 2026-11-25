@@ -60,8 +60,6 @@ LogPanel::LogPanel(QWidget *parent) : QWidget(parent)
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(5);
     auto *toolbar = new QHBoxLayout;
-    auto *title = new QLabel(tr("日志"), this);
-    title->setObjectName("panelTitle");
     m_pause = new QPushButton(tr("冻结日志"), this);
     m_pause->setCheckable(true);
     m_pause->setObjectName("freezeLogButton");
@@ -72,7 +70,6 @@ LogPanel::LogPanel(QWidget *parent) : QWidget(parent)
     saveMenu->addAction(tr("保存当前筛选"), this, [this] { saveDialog(true); });
     saveMenu->addAction(tr("保存全部缓冲"), this, [this] { saveDialog(false); });
     save->setMenu(saveMenu);
-    toolbar->addWidget(title);
     toolbar->addStretch();
     toolbar->addWidget(m_pause);
     toolbar->addWidget(clearButton);

@@ -3,6 +3,7 @@
 #include "serialpanel.h"
 #include "statuspanel.h"
 #include "recordingpanel.h"
+#include <QFrame>
 #include <QLabel>
 #include <QBoxLayout>
 #include <QSettings>
@@ -12,17 +13,30 @@
 ConfigStatusPanel::ConfigStatusPanel(QWidget *parent)
     : QWidget(parent)
 {
-    auto *layout = new QHBoxLayout(this);   // 布局直接设在 this 上
+    auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(4);
-    layout->addWidget(createConfigWidget(), 3);            // 通信配置
+    layout->setSpacing(8);
+    layout->addWidget(createConfigWidget(), 3);
     m_recordingPanel = new RecordingPanel(this);
-    layout->addWidget(m_recordingPanel, 2);                // 采集记录单独一列
-    layout->addWidget(createStatusWidget(), 5);            // 状态区
+    m_recordingPanel->setProperty("workspaceCard", true);
+    m_recordingPanel->setAttribute(Qt::WA_StyledBackground);
+    layout->addWidget(m_recordingPanel, 2);
+    m_statusPanel = new StatusPanel(this);
+    m_statusPanel->setProperty("workspaceCard", true);
+    m_statusPanel->setAttribute(Qt::WA_StyledBackground);
+    layout->addWidget(m_statusPanel, 5);
 }
 QWidget* ConfigStatusPanel::createConfigWidget()
 {
-    auto *config = new QTabWidget(this);
+    auto *card = new QFrame(this);
+    card->setProperty("workspaceCard", true);
+    auto *cardLayout = new QVBoxLayout(card);
+    cardLayout->setContentsMargins(8, 8, 8, 3);
+    cardLayout->setSpacing(3);
+    auto *title = new QLabel(tr("通信配置"), card);
+    title->setObjectName("panelTitle");
+    cardLayout->addWidget(title);
+    auto *config = new QTabWidget(card);
     config->setObjectName("communicationConfigTabs");
     config->setDocumentMode(true);
     config->addTab(createSensorConfig(), tr("传感数据接收"));
@@ -46,7 +60,8 @@ QWidget* ConfigStatusPanel::createConfigWidget()
     console->setCurrentIndex(canIndex);
 #endif
     config->addTab(console, tr("控制台配置"));
-    return config;
+    cardLayout->addWidget(config);
+    return card;
 }
 
 QWidget* ConfigStatusPanel::createSensorConfig()
@@ -54,7 +69,8 @@ QWidget* ConfigStatusPanel::createSensorConfig()
     auto *configWidget = new QWidget;
     configWidget->setObjectName("configWidget");
     auto *configInner = new QVBoxLayout(configWidget);
-    configInner->setContentsMargins(8, 0, 8, 0);
+    configInner->setContentsMargins(4, 4, 4, 0);
+    configInner->setSpacing(3);
     auto *selector = new QComboBox(configWidget);
     selector->setObjectName("transportSelector");
     selector->setAccessibleName(tr("传感数据接收方式"));
@@ -116,14 +132,4 @@ StatusPanel* ConfigStatusPanel::statusPanel() const
 RecordingPanel* ConfigStatusPanel::recordingPanel() const
 {
     return m_recordingPanel;
-}
-QWidget* ConfigStatusPanel::createStatusWidget()
-{
-    auto *statusWidget=new QWidget;
-    statusWidget->setObjectName("statusWidget");
-    auto *statusInner = new QVBoxLayout(statusWidget);
-    statusInner->setContentsMargins(0, 0, 0, 0);   // 边距由 StatusPanel 自己控制
-    m_statusPanel = new StatusPanel(statusWidget);
-    statusInner->addWidget(m_statusPanel);
-    return statusWidget;
 }

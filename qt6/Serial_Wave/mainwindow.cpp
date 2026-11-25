@@ -1,8 +1,10 @@
 #include "mainwindow.h"
+#include "canframe.h"
 #include "canpanel.h"
 #include "configstatuspanel.h"
 #include "wavepanel.h"
 #include "logpanel.h"
+#include "uartterminal.h"
 #include "serialpanel.h"
 #include "commandbar.h"
 #include "recordingpanel.h"
@@ -26,7 +28,8 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QTextBrowser>
-#include <QTabWidget>
+#include <QStackedWidget>
+#include <QTabBar>
 #include <utility>
 
 namespace
@@ -55,8 +58,8 @@ MainWindow::MainWindow(QWidget *parent)
     resize(defaultWindowSize(QGuiApplication::primaryScreen()));
     auto *central = new QWidget(this);
     auto *layout = new QVBoxLayout(central);
-    layout->setContentsMargins(6, 6, 6, 6);
-    layout->setSpacing(6);
+    layout->setContentsMargins(8, 8, 8, 8);
+    layout->setSpacing(8);
     auto *config = new ConfigStatusPanel(central);
     auto *sensorUart = config->serialPanel();
     auto *sensorCan = config->canPanel();
@@ -74,53 +77,101 @@ MainWindow::MainWindow(QWidget *parent)
     m_logDock->setAllowedAreas(Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
     auto *console = new QWidget(m_logDock);
     auto *consoleLayout = new QVBoxLayout(console);
-    consoleLayout->setContentsMargins(4, 4, 4, 4);
-    auto *sendTabs = new QTabWidget(console);
-    sendTabs->setObjectName("consoleSendTabs");
-    sendTabs->setDocumentMode(true);
-    m_commandBar = new CommandBar(sendTabs);
-    const int uartTab = sendTabs->addTab(m_commandBar, tr("UART"));
-    connect(consoleUart, &SerialPanel::connectionChanged, sendTabs, [this, sendTabs, uartTab](bool connected)
+    consoleLayout->setContentsMargins(10, 8, 10, 10);
+    consoleLayout->setSpacing(8);
+    auto *tabs = new QTabBar(console);
+    tabs->setObjectName("consoleTabs");
+    tabs->setDocumentMode(true);
+    tabs->setDrawBase(false);
+    tabs->setExpanding(true);
+    tabs->setUsesScrollButtons(false);
+    tabs->setAccessibleName(tr("控制台模式"));
+    const int uartTab = tabs->addTab(tr("UART"));
+    const int terminalTab = tabs->addTab(tr("UART 终端"));
+    const int canTab = consoleCan ? tabs->addTab(tr("CAN")) : -1;
+    consoleLayout->addWidget(tabs);
+
+    auto *consolePages = new QStackedWidget(console);
+    auto *commandPage = new QWidget(consolePages);
+    commandPage->setObjectName("consoleCommandPage");
+    auto *commandLayout = new QVBoxLayout(commandPage);
+    commandLayout->setContentsMargins(0, 0, 0, 0);
+    commandLayout->setSpacing(10);
+    auto *editors = new QStackedWidget(commandPage);
+    m_commandBar = new CommandBar(editors);
+    editors->addWidget(m_commandBar);
+    connect(consoleUart, &SerialPanel::connectionChanged, tabs, [this, tabs, uartTab, terminalTab](bool connected)
     {
         m_commandBar->setConnected(connected);
-        sendTabs->setTabText(uartTab, connected ? tr("UART · 已连接") : tr("UART"));
+        tabs->setTabText(uartTab, connected ? tr("UART · 在线") : tr("UART"));
+        tabs->setTabToolTip(terminalTab, connected ? tr("UART 已连接") : tr("请先连接控制台 UART"));
     });
 
     if (consoleCan)
     {
-        auto *canCommands = new CanCommandBar(sendTabs);
-        const int canTab = sendTabs->addTab(canCommands, tr("CAN"));
-        sendTabs->setCurrentIndex(canTab);
-        connect(consoleCan, &CanPanel::connectionChanged, sendTabs,
-                [canCommands, sendTabs, canTab](bool connected)
+        auto *canCommands = new CanCommandBar(editors);
+        editors->addWidget(canCommands);
+        connect(consoleCan, &CanPanel::connectionChanged, tabs,
+                [canCommands, tabs, canTab](bool connected)
                 {
                     canCommands->setConnected(connected);
-                    sendTabs->setTabText(canTab, connected ? tr("CAN · 已连接") : tr("CAN"));
+                    tabs->setTabText(canTab, connected ? tr("CAN · 在线") : tr("CAN"));
                 });
         connect(canCommands, &CanCommandBar::commandSubmitted, this,
-                [this, consoleCan](const QByteArray &payload)
+                [this, consoleCan](quint32 id, const QByteArray &payload)
                 {
-                    const auto error = consoleCan->sendCommand(payload);
+                    const auto idText = formatStandardCanId(id);
+                    const auto error = consoleCan->sendCommand(id, payload);
                     if (!error.isEmpty())
                     {
-                        LogPanel::warning(tr("CAN 0x650 发送失败：%1").arg(error));
+                        LogPanel::warning(tr("CAN %1 发送失败：%2").arg(idText, error));
                         return;
                     }
 
-                    const auto message = tr("已排队 [CAN] 0x650 · DLC %1 · %2")
+                    const auto message = tr("已排队 [CAN] %1 · DLC %2 · %3")
+                                             .arg(idText)
                                              .arg(payload.size())
                                              .arg(QString::fromLatin1(payload.toHex(' ').toUpper()));
                     logConsoleTransmission(message);
                 });
     }
-    m_logPanel = new LogPanel(console);
+
+    m_logPanel = new LogPanel(commandPage);
     LogPanel::setInstance(m_logPanel);
-    consoleLayout->addWidget(sendTabs);
-    consoleLayout->addWidget(m_logPanel, 1);
+    commandLayout->addWidget(editors);
+    commandLayout->addWidget(m_logPanel, 1);
+    consolePages->addWidget(commandPage);
+    auto *terminal = new UartTerminal(consolePages);
+    consolePages->addWidget(terminal);
+    connect(tabs, &QTabBar::currentChanged, consolePages, [=](int tab)
+    {
+        if (tab == terminalTab)
+        {
+            consolePages->setCurrentWidget(terminal);
+            terminal->focusTerminal();
+        }
+        else
+        {
+            editors->setCurrentIndex(tab == canTab ? 1 : 0);
+            consolePages->setCurrentWidget(commandPage);
+        }
+    });
+    tabs->setCurrentIndex(consoleCan ? canTab : uartTab);
+
+    connect(consoleUart, &SerialPanel::dataReceived, terminal, &UartTerminal::receive);
+    connect(consoleUart, &SerialPanel::connectionChanged, terminal, &UartTerminal::setConnected);
+    connect(terminal, &UartTerminal::inputReady, terminal, [terminal, consoleUart](const QByteArray &bytes)
+    {
+        const auto written = consoleUart->sendData(bytes);
+        if (written != bytes.size())
+            terminal->showWriteError(tr("UART 发送未完整排队：%1/%2 字节")
+                                         .arg(qMax(qint64(0), written)).arg(bytes.size()));
+    });
+    consoleLayout->addWidget(consolePages, 1);
     m_logDock->setWidget(console);
     m_logDock->setMinimumWidth(380);
     addDockWidget(Qt::RightDockWidgetArea, m_logDock);
-    resizeDocks({m_logDock}, {kConsoleWidth}, Qt::Horizontal);
+    sizeConsoleDock();
     auto *file = menuBar()->addMenu(tr("文件"));
     auto *newSession = file->addAction(tr("新建采集会话"), m_wavePanel, &WavePanel::clearData);
     newSession->setShortcut(QKeySequence::New);
@@ -162,15 +213,18 @@ MainWindow::MainWindow(QWidget *parent)
     m_viewToolbar->addAction(m_consoleAction);
     m_viewToolbar->addAction(reset);
     auto *searchLog = view->addAction(tr("搜索日志"), this,
-                                      [this]
+                                      [this, tabs, terminalTab, editors, uartTab, canTab]
                                       {
                                           m_logDock->show();
                                           m_logDock->raise();
+                                          if (tabs->currentIndex() == terminalTab)
+                                              tabs->setCurrentIndex(editors->currentIndex() == 0 ? uartTab : canTab);
                                           auto *search =
                                               m_logPanel->findChild<QLineEdit *>("logSearch");
                                           search->setFocus();
                                           search->selectAll();
                                       });
+    searchLog->setObjectName("searchLogAction");
     searchLog->setShortcut(QKeySequence::Find);
     auto *help = menuBar()->addMenu(tr("帮助"));
     auto *usage = help->addAction(
@@ -188,13 +242,18 @@ MainWindow::MainWindow(QWidget *parent)
                    "打开本说明。</p>"
                    "<p>在控制台配置里可分别连接 UART 和 CAN，两者可同时在线。"
                    "控制台的连接独立于传感数据接收。"
-                   "CAN 发送使用标准帧 ID 0x650：首字节是命令号，后面是 0～7 字节 HEX 参数。"
+                   "CAN 发送 ID 按目标设备填写十六进制 000～7FF，默认 650。"
+                   "首字节是命令号，后面是 0～7 字节 HEX 参数。"
                    "日志中的已排队表示系统接受了发送请求。</p>"
                    "<p>控制台 CAN 回复 ID 使用 11 位标准帧，以十六进制填写 000～7FF。"
                    "可以用逗号或空格填写多项，留空接收所有标准数据帧。</p>"
                    "<p>串口发送区支持 UTF-8 文本和 HEX。HEX 示例：<code>AA 55 01</code>，不加 "
                    "0x，也不追加换行。"
                    "收藏和历史只填入编辑框，仍需回车或点击发送。未连接时也可编辑和收藏。</p>"
+                   "<p>右侧控制台把 UART、UART 终端和 CAN 放在同一排页签。"
+                   "连接控制台 UART 后可打开 UART 终端，点击终端直接输入。"
+                   "回车和退格的发送格式可选。Ctrl+C 会中断下位机 Shell，"
+                   "Ctrl+Shift+C 复制，Ctrl+Shift+V 粘贴。</p>"
                    "<p>日志可按关键字、级别和 RX/TX/系统来源筛选。冻结日志只冻结视图，采集继续；"
                    "缓冲保留最近 2000 条。保存菜单可选择当前筛选或全部缓冲。</p>"
                    "<p>接收显示可选文本、原始 HEX 或关闭。HEX 显示有速率限制，超过时提示省略字节；"
@@ -394,9 +453,14 @@ void MainWindow::showEvent(QShowEvent *event)
     {
         m_applyDefaultConsoleWidth = false;
         // 窗口首次完成布局后再分配宽度，避免小的初始尺寸把控制台压回最小宽度。
-        QTimer::singleShot(0, this,
-                           [this] { resizeDocks({m_logDock}, {kConsoleWidth}, Qt::Horizontal); });
+        QTimer::singleShot(0, this, &MainWindow::sizeConsoleDock);
     }
+}
+
+void MainWindow::sizeConsoleDock()
+{
+    const int preferred = qBound(m_logDock->minimumWidth(), qRound(width() * 0.32), kConsoleWidth);
+    resizeDocks({m_logDock}, {preferred}, Qt::Horizontal);
 }
 
 void MainWindow::resetLayout()
@@ -407,7 +471,7 @@ void MainWindow::resetLayout()
     m_logDock->raise();
     m_viewToolbar->show();
     resize(width(), qMax(height(), defaultWindowSize(screen()).height()));
-    resizeDocks({m_logDock}, {kConsoleWidth}, Qt::Horizontal);
+    sizeConsoleDock();
     m_wavePanel->resetPlotLayout();
 }
 void MainWindow::appendDeviceText(const QByteArray &bytes)
@@ -473,9 +537,8 @@ void MainWindow::queueCanReceive(quint32 id, const QByteArray &payload)
         return;
     if (m_canReceiveBatch.size() < 64)
     {
-        const auto idHex = QString::number(id, 16).rightJustified(3, QLatin1Char('0')).toUpper();
-        m_canReceiveBatch.append(tr("[CAN] 0x%1 · DLC %2 %3")
-                                     .arg(idHex).arg(payload.size())
+        m_canReceiveBatch.append(tr("[CAN] %1 · DLC %2 %3")
+                                     .arg(formatStandardCanId(id)).arg(payload.size())
                                      .arg(QString::fromLatin1(payload.toHex(' ').toUpper())).trimmed());
     }
     else

@@ -67,7 +67,7 @@ public:
     explicit CanCommandBar(QWidget *parent = nullptr);
     void setConnected(bool connected);
 signals:
-    void commandSubmitted(const QByteArray &payload);
+    void commandSubmitted(quint32 id, const QByteArray &payload);
 
 private:
     QByteArray commandPayload(QString &error, qsizetype *parameterCount = nullptr) const;
@@ -75,6 +75,7 @@ private:
     void submit();
     void openNumberConverter();
 
+    QLineEdit *m_sendId;
     QLineEdit *m_command;
     QLineEdit *m_parameters;
     QPushButton *m_send;

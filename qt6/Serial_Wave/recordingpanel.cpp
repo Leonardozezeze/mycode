@@ -31,7 +31,7 @@ QString duration(double seconds)
 RecordingPanel::RecordingPanel(QWidget *parent) : QWidget(parent)
 {
     auto *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(8, 8, 8, 8);
+    layout->setContentsMargins(10, 8, 10, 8);
     layout->setSpacing(6);
     auto *title = new QLabel(tr("采集会话"), this);
     title->setObjectName("panelTitle");
@@ -56,23 +56,26 @@ RecordingPanel::RecordingPanel(QWidget *parent) : QWidget(parent)
     auto *newBtn = new QPushButton(tr("新建会话"), this);
     newBtn->setToolTip(tr("保存并结束当前记录，再创建新会话；原文件保留。"));
     auto *exportBtn = new QPushButton(tr("导出…"), this);
-    buttons->addWidget(m_recordBtn);
+    buttons->setSpacing(5);
+    buttons->addWidget(m_recordBtn, 1);
     buttons->addWidget(newBtn);
-    buttons->addWidget(exportBtn);
     layout->addLayout(buttons);
-    auto *row = new QHBoxLayout;
     m_autoExportCheck = new QCheckBox(tr("断开时导出 CSV"), this);
     m_autoExportCheck->setToolTip(tr("原始会话始终自动保存；勾选后断开传感连接时额外导出 CSV。"));
     m_autoExportCheck->setChecked(QSettings().value("recording/autoExport", false).toBool());
     auto *directory = new QPushButton(tr("记录目录"), this);
-    row->addWidget(m_autoExportCheck);
-    row->addStretch();
-    row->addWidget(directory);
-    layout->addLayout(row);
-    auto *cleanup = new QPushButton(tr("清理历史会话…"), this);
+    auto *cleanup = new QPushButton(tr("清理历史…"), this);
     cleanup->setObjectName("clearSavedSessionsButton");
     cleanup->setToolTip(tr("确认后删除记录目录中的历史 .swave 与配套事件文件；保留当前会话和导出文件。"));
-    layout->addWidget(cleanup);
+    auto *files = new QHBoxLayout;
+    files->setSpacing(5);
+    for (auto *button : {exportBtn, directory, cleanup})
+    {
+        button->setProperty("compactAction", true);
+        files->addWidget(button);
+    }
+    layout->addLayout(files);
+    layout->addWidget(m_autoExportCheck);
     connect(cleanup, &QPushButton::clicked, this, [this]
     {
         if (m_wave) m_wave->clearSavedSessions();

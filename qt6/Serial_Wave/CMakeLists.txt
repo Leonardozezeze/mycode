@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 project(Serial_Wave VERSION 0.2.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets PrintSupport SerialPort Concurrent)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets PrintSupport SerialPort SerialBus Concurrent)
 qt_standard_project_setup()
 
 add_library(serial_wave_backend STATIC
@@ -20,10 +20,11 @@ add_library(serial_wave_ui STATIC
     serialpanel.h serialpanel.cpp
     canpanel.h canpanel.cpp canframe.h
     logpanel.h logpanel.cpp
+    uartterminal.h uartterminal.cpp
     commandbar.h commandbar.cpp
     statuspanel.h statuspanel.cpp
     recordingpanel.h recordingpanel.cpp)
-target_link_libraries(serial_wave_ui PUBLIC serial_wave_backend Qt::Widgets Qt::PrintSupport Qt::SerialPort Qt::Concurrent)
+target_link_libraries(serial_wave_ui PUBLIC serial_wave_backend Qt::Widgets Qt::PrintSupport Qt::SerialPort Qt::SerialBus Qt::Concurrent)
 qt_add_executable(Serial_Wave WIN32 MACOSX_BUNDLE main.cpp)
 target_link_libraries(Serial_Wave PRIVATE serial_wave_ui)
 

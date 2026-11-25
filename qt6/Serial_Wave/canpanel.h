@@ -5,12 +5,12 @@
 #include <QTime>
 #include <QWidget>
 
+class QCanBusDevice;
 class QLabel;
 class QLineEdit;
 class QProcess;
 class QPushButton;
 class QShowEvent;
-class QSocketNotifier;
 
 class CanPanel : public QWidget
 {
@@ -20,7 +20,7 @@ public:
 
     explicit CanPanel(QWidget *parent = nullptr, Role role = Role::Sensor);
     ~CanPanel() override;
-    QString sendCommand(const QByteArray &payload);
+    QString sendCommand(quint32 id, const QByteArray &payload);
 
 signals:
     void frameReceived(quint32 id, const QByteArray &payload);
@@ -31,8 +31,10 @@ protected:
 
 private:
     void toggleConnection();
+    void handleConnected();
+    void handleUnconnected();
     void readFrames();
-    void closeSocket();
+    void closeDevice();
     void disconnectDevice();
     void showError(const QString &message);
     void refreshInterface();
@@ -43,6 +45,7 @@ private:
     QString m_settingsGroup;
     QLineEdit *m_interface = nullptr;
     QLineEdit *m_canId = nullptr;
+    QLineEdit *m_bitrateInput = nullptr; // 非 Linux：PCAN 波特率由程序设置
     QLabel *m_receiveIdStatus = nullptr;
     QPushButton *m_connect = nullptr;
     QLabel *m_status = nullptr;
@@ -52,8 +55,9 @@ private:
     QLabel *m_lastReceived = nullptr;
     QProcess *m_linkQuery = nullptr;
     QString m_queriedInterface;
-    QSocketNotifier *m_notifier = nullptr;
-    int m_socket = -1;
+    QCanBusDevice *m_device = nullptr;
+    bool m_connected = false;
+    QList<quint32> m_filterIds;
     quint64 m_receivedFrames = 0;
     quint64 m_receivedBytes = 0;
     QTime m_lastReceivedAt;
