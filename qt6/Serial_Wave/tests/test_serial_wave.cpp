@@ -250,7 +250,11 @@ private slots:
             id->setText("7A1");
             number->setText("0x02");
             parameters->setText("AA");
+            QSignalSpy submitted(&commands, &CanCommandBar::commandSubmitted);
             commands.findChild<QPushButton *>("canSendButton")->click();
+            QCOMPARE(submitted.count(), 1);
+            QVERIFY(!settings.contains("command/canSendId"));
+            commands.rememberQueuedSendId(submitted.at(0).at(0).toUInt());
         }
         CanCommandBar restored;
         QCOMPARE(restored.findChild<QLineEdit *>("canSendId")->text(), QString("7A1"));
@@ -350,7 +354,6 @@ private slots:
     }
     void canReceptionReachesPlotStatusAndArchive()
     {
-#ifdef Q_OS_LINUX
         QSettings().remove("connection/transport");
         MainWindow window;
         auto *selector = window.findChild<QComboBox *>("transportSelector");
@@ -358,12 +361,19 @@ private slots:
         auto *consoleCan = window.findChild<CanPanel *>("consoleCanPanel");
         auto *wave = window.findChild<WavePanel *>();
         auto *status = window.findChild<StatusPanel *>();
-        QCOMPARE(selector->currentData().toString(), QString("can"));
+        const int canIndex = selector->findData(QString("can"));
+        QVERIFY(canIndex >= 0);
+        QVERIFY(consoleCan);
+        selector->setCurrentIndex(canIndex);
         auto *interface = can->findChild<QLineEdit *>("canInterface");
+#ifdef Q_OS_LINUX
         QCOMPARE(interface->text(), QString("can0"));
         interface->setText("invalid/name");
         QCOMPARE(can->findChild<QLabel *>("canInterfaceState")->text(), QString("接口名无效"));
         interface->setText("can0");
+#else
+        QCOMPARE(interface->text(), QString("usb0"));
+#endif
         QCOMPARE(can->findChild<QLineEdit *>("canId")->text(), QString("0x123"));
         auto *canCommands = window.findChild<CanCommandBar *>();
         auto *send = canCommands->findChild<QPushButton *>("canSendButton");
@@ -399,12 +409,14 @@ private slots:
         QVERIFY(QTime::fromString(lastReceive->text(), "HH:mm:ss.zzz").isValid());
 
         // 注入的是连接信号，底层套接字还没打开。失败时日志说明原因，不能记为已排队。
+        const auto previousSendId = QSettings().value("command/canSendId");
         canCommands->findChild<QLineEdit *>("canSendId")->setText("7A1");
         auto *canData = canCommands->findChild<QLineEdit *>("canCommandParameters");
         canData->setText("00 01");
         canCommands->findChild<QPushButton *>("canSendButton")->click();
         QCOMPARE(canData->text(), QString("00 01"));
         QTRY_VERIFY(log->toPlainText().contains("CAN 0x7A1 发送失败"));
+        QCOMPARE(QSettings().value("command/canSendId"), previousSendId);
         const auto beforeDisconnect = wave->sessionEvents();
         QVERIFY(std::none_of(beforeDisconnect.begin(), beforeDisconnect.end(), [](const auto &event)
         { return event.type == "command"; }));
@@ -437,9 +449,6 @@ private slots:
         QVERIFY(!send->isEnabled());
         QVERIFY(wave->isRecording());
         can->connectionChanged(false);
-#else
-        QSKIP("CAN 连接界面使用 Linux SocketCAN。");
-#endif
     }
     void parserRatioValuesBecomePercentages()
     {

@@ -482,10 +482,14 @@ void CanCommandBar::submit()
     QString error;
     const auto payload = commandPayload(error);
     if (!payload.isEmpty())
-    {
-        QSettings().setValue(QStringLiteral("command/canSendId"), m_sendId->text().trimmed());
         emit commandSubmitted(*id, payload);
-    }
+}
+
+void CanCommandBar::rememberQueuedSendId(quint32 id)
+{
+    const auto text = m_sendId->text().trimmed();
+    QSettings().setValue(QStringLiteral("command/canSendId"),
+                         parseStandardHexCanId(text) == id ? text : formatStandardCanId(id).mid(2));
 }
 
 void CanCommandBar::openNumberConverter()

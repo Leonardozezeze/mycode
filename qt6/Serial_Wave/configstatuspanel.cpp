@@ -50,13 +50,13 @@ QWidget* ConfigStatusPanel::createConfigWidget()
     connect(m_consoleSerialPanel, &SerialPanel::connectionChanged, console,
             [console, uartIndex](bool connected)
             { console->setTabText(uartIndex, connected ? tr("UART · 已连接") : tr("UART")); });
-#ifdef Q_OS_LINUX
     m_consoleCanPanel = new CanPanel(console, CanPanel::Role::Console);
     m_consoleCanPanel->setObjectName("consoleCanPanel");
     const int canIndex = console->addTab(m_consoleCanPanel, tr("CAN"));
     connect(m_consoleCanPanel, &CanPanel::connectionChanged, console,
             [console, canIndex](bool connected)
             { console->setTabText(canIndex, connected ? tr("CAN · 已连接") : tr("CAN")); });
+#ifdef Q_OS_LINUX
     console->setCurrentIndex(canIndex);
 #endif
     config->addTab(console, tr("控制台配置"));
@@ -79,9 +79,7 @@ QWidget* ConfigStatusPanel::createSensorConfig()
     m_canPanel->setObjectName("sensorCanPanel");
     m_serialPanel = new SerialPanel(stack);
     m_serialPanel->setObjectName("sensorUartPanel");
-#ifdef Q_OS_LINUX
     selector->addItem(tr("CAN 总线"), QStringLiteral("can"));
-#endif
     selector->addItem(tr("串口"), QStringLiteral("serial"));
     selector->setVisible(selector->count() > 1);
     configInner->addWidget(selector);
@@ -96,7 +94,12 @@ QWidget* ConfigStatusPanel::createSensorConfig()
             m_serialPanel->cancelReconnect();
         stack->setCurrentWidget(canSelected ? static_cast<QWidget *>(m_canPanel) : m_serialPanel);
     };
-    const int saved = selector->findData(QSettings().value("connection/transport", "can"));
+#ifdef Q_OS_LINUX
+    const auto defaultTransport = QStringLiteral("can");
+#else
+    const auto defaultTransport = QStringLiteral("serial");
+#endif
+    const int saved = selector->findData(QSettings().value("connection/transport", defaultTransport));
     selector->setCurrentIndex(qMax(0, saved));
     selectTransport();
     connect(selector, &QComboBox::currentIndexChanged, this, [selector, selectTransport]

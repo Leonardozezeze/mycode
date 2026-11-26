@@ -66,6 +66,7 @@ class CanCommandBar : public QWidget
 public:
     explicit CanCommandBar(QWidget *parent = nullptr);
     void setConnected(bool connected);
+    void rememberQueuedSendId(quint32 id);
 signals:
     void commandSubmitted(quint32 id, const QByteArray &payload);
 

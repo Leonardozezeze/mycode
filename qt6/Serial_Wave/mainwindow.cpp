@@ -118,7 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
                     tabs->setTabText(canTab, connected ? tr("CAN · 在线") : tr("CAN"));
                 });
         connect(canCommands, &CanCommandBar::commandSubmitted, this,
-                [this, consoleCan](quint32 id, const QByteArray &payload)
+                [this, consoleCan, canCommands](quint32 id, const QByteArray &payload)
                 {
                     const auto idText = formatStandardCanId(id);
                     const auto error = consoleCan->sendCommand(id, payload);
@@ -128,6 +128,7 @@ MainWindow::MainWindow(QWidget *parent)
                         return;
                     }
 
+                    canCommands->rememberQueuedSendId(id);
                     const auto message = tr("已排队 [CAN] %1 · DLC %2 · %3")
                                              .arg(idText)
                                              .arg(payload.size())

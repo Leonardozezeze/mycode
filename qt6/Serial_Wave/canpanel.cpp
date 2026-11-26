@@ -197,6 +197,9 @@ CanPanel::CanPanel(QWidget *parent, Role role)
         connect(m_canId, &QLineEdit::textChanged, this, &CanPanel::refreshReceiveIds);
         refreshReceiveIds();
     }
+    m_receiveContinuation = new QTimer(this);
+    m_receiveContinuation->setSingleShot(true);
+    connect(m_receiveContinuation, &QTimer::timeout, this, &CanPanel::readFrames);
     auto *trafficTimer = new QTimer(this);
     trafficTimer->setSingleShot(true);
     trafficTimer->setInterval(250);
@@ -450,6 +453,14 @@ void CanPanel::toggleConnection()
     }
 #ifndef Q_OS_LINUX
     m_device->setConfigurationParameter(QCanBusDevice::BitRateKey, bitrate);
+    if (m_device->error() != QCanBusDevice::NoError ||
+        m_device->configurationParameter(QCanBusDevice::BitRateKey).toInt() != bitrate)
+    {
+        const auto reason = m_device->errorString();
+        closeDevice();
+        showError(tr("无法设置 CAN 波特率 %1：%2").arg(bitrate).arg(reason));
+        return;
+    }
 #endif
     m_filterIds = ids;
     connect(m_device, &QCanBusDevice::framesReceived, this, &CanPanel::readFrames);
@@ -475,10 +486,13 @@ void CanPanel::toggleConnection()
 #endif
     m_connect->setText(tr("断开"));
     m_status->setText(tr("连接中…"));
-    if (!m_device->connectDevice())
+    auto *device = m_device;
+    if (!device->connectDevice())
     {
-        showError(tr("无法连接 CAN：%1").arg(m_device->errorString()));
-        handleUnconnected();
+        const auto reason = device->errorString();
+        if (m_device == device)
+            handleUnconnected();
+        showError(tr("无法连接 CAN：%1").arg(reason));
     }
 }
 
@@ -550,10 +564,13 @@ void CanPanel::readFrames()
             continue;
         emit frameReceived(id, frame.payload());
     }
+    if (m_device && m_device->framesAvailable() > 0 && !m_receiveContinuation->isActive())
+        m_receiveContinuation->start();
 }
 
 void CanPanel::closeDevice()
 {
+    m_receiveContinuation->stop();
     if (!m_device)
         return;
     m_device->disconnect(this);

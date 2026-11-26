@@ -11,6 +11,7 @@ class QLineEdit;
 class QProcess;
 class QPushButton;
 class QShowEvent;
+class QTimer;
 
 class CanPanel : public QWidget
 {
@@ -56,6 +57,7 @@ private:
     QProcess *m_linkQuery = nullptr;
     QString m_queriedInterface;
     QCanBusDevice *m_device = nullptr;
+    QTimer *m_receiveContinuation = nullptr;
     bool m_connected = false;
     QList<quint32> m_filterIds;
     quint64 m_receivedFrames = 0;
