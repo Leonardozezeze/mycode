@@ -386,8 +386,8 @@ private slots:
         consoleCan->frameReceived(0x7FF, QByteArray::fromHex("aabb"));
         QCOMPARE(wave->sampleCount(), 0);
         auto *log = window.findChild<LogPanel *>()->findChild<QPlainTextEdit *>();
-        QTRY_VERIFY(log->toPlainText().contains("[CAN] 0x651 · DLC 8"));
-        QVERIFY(log->toPlainText().contains("[CAN] 0x7FF · DLC 2 AA BB"));
+        QTRY_VERIFY(log->toPlainText().contains("[CAN] 0x651 [8]"));
+        QVERIFY(log->toPlainText().contains("[CAN] 0x7FF [2] AA BB"));
 
         can->connectionChanged(true);
         auto *traffic = can->findChild<QLabel *>("canTraffic");

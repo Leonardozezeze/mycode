@@ -474,8 +474,22 @@ void CanPanel::toggleConnection()
         else if (state == QCanBusDevice::UnconnectedState)
             handleUnconnected();
     });
-    connect(m_device, &QCanBusDevice::errorOccurred, this, [this]
+    connect(m_device, &QCanBusDevice::errorOccurred, this, [this](QCanBusDevice::CanBusError error)
     {
+#ifdef Q_OS_MACOS
+        // Qt peakcan unregisters PCAN_RECEIVE_EVENT while closing. MacCAN 0.13
+        // does not support that setter, but still uninitializes the channel.
+        if (m_device && m_device->state() == QCanBusDevice::ClosingState &&
+            error == QCanBusDevice::ConnectionError &&
+            m_device->errorString() == QStringLiteral(
+                "An operation is not allowed due to the current configuration"))
+        {
+            LogPanel::debug(tr("MacCAN 断开清理：驱动不支持注销接收事件。"));
+            return;
+        }
+#else
+        Q_UNUSED(error);
+#endif
         if (m_device && m_connected)
             showError(tr("CAN 错误：%1").arg(m_device->errorString()));
     });

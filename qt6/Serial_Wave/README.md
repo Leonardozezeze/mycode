@@ -9,6 +9,8 @@ Linux 使用 SocketCAN，Windows/macOS 使用 PCAN-USB（peakcan 插件）。
 **Windows**：安装 PEAK 官方驱动（含 PCANBasic.dll），接口名填 `usb0`（对应 PCAN_USBBUS1）。
 **macOS**：安装 [MacCAN PCBUSB 库](https://github.com/mac-can/PCBUSB-Library)（≥0.9），接口名同样填 `usb0`，
 波特率在程序内设置。Windows/macOS 上连接时程序会把所填波特率写入 PCAN 通道。
+macOS 安装驱动库后需重新运行 CMake 并构建；构建会将驱动库以 Qt 插件要求的 `PCBUSB` 名称复制到应用包的 `Contents/Frameworks`。
+如果安装在自定义目录，可通过 CMake 的 `PCBUSB_LIBRARY` 指定 `libPCBUSB.dylib` 的绝对路径。
 
 在程序中选择“传感数据接收 → CAN 总线”，填写接口名后点击“连接”。采集端只接收所选 ID 的经典 CAN 标准数据帧。
 默认 ID 为 `0x123`（十进制 291）。如果发送端使用十进制 123，在“接收 ID”中填 `123`，
@@ -191,7 +193,7 @@ Y 轴范围。隐藏只影响绘图，原始数据、统计和导出仍完整保
   字节长度和字节序按下位机定义选择。
 - 控制台 CAN 的回复 ID 使用 11 位标准帧，按十六进制填写 `000～7FF`。支持多项，例如 `651, 652, 7FF`，
   可加 `0x`，以逗号或空格分隔，重复 ID 会合并。最多可筛选 512 个不同 ID，留空接收所有标准数据帧。
-  断开控制台 CAN 后可以修改列表。接收日志逐帧显示 ID、DLC 和 HEX 数据，每约 100 毫秒最多展示 64 帧。
+  断开控制台 CAN 后可以修改列表。收发日志用 `[长度]` 显示字节数，例如 `[CAN] 0x7FF [2] AA BB`；接收日志每约 100 毫秒最多展示 64 帧。
 - 串口发送支持 UTF-8 文本与 HEX；文本可选择 CRLF、LF、CR 或不加结尾。
   HEX 接受 `AA 55 01` 或 `AA5501`，不加 `0x`，不追加换行；奇数字符或非十六进制输入不会发送。
   下方显示实际字节数，文本模式包含结尾字节。发送日志的“已排队”不代表设备已确认执行。

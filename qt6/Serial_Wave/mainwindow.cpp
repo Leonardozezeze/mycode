@@ -129,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
                     }
 
                     canCommands->rememberQueuedSendId(id);
-                    const auto message = tr("已排队 [CAN] %1 · DLC %2 · %3")
+                    const auto message = tr("已排队 [CAN] %1 [%2] %3")
                                              .arg(idText)
                                              .arg(payload.size())
                                              .arg(QString::fromLatin1(payload.toHex(' ').toUpper()));
@@ -538,7 +538,7 @@ void MainWindow::queueCanReceive(quint32 id, const QByteArray &payload)
         return;
     if (m_canReceiveBatch.size() < 64)
     {
-        m_canReceiveBatch.append(tr("[CAN] %1 · DLC %2 %3")
+        m_canReceiveBatch.append(tr("[CAN] %1 [%2] %3")
                                      .arg(formatStandardCanId(id)).arg(payload.size())
                                      .arg(QString::fromLatin1(payload.toHex(' ').toUpper())).trimmed());
     }

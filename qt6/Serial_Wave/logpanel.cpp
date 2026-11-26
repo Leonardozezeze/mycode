@@ -49,6 +49,17 @@ QColor levelColor(LogPanel::Level level)
     }
     return {};
 }
+QColor entryColor(LogPanel::Level level, LogPanel::Channel channel)
+{
+    if (level == LogPanel::Level::Info)
+    {
+        if (channel == LogPanel::Channel::Receive)
+            return QColor(110, 210, 150);
+        if (channel == LogPanel::Channel::Transmit)
+            return QColor(105, 185, 255);
+    }
+    return levelColor(level);
+}
 } // namespace
 LogPanel *LogPanel::s_instance = nullptr;
 
@@ -294,7 +305,7 @@ void LogPanel::flushDisplay()
         if (!m_view->document()->isEmpty())
             cursor.insertBlock();
         QTextCharFormat format;
-        format.setForeground(levelColor(entry.level));
+        format.setForeground(entryColor(entry.level, entry.channel));
         cursor.setCharFormat(format);
         cursor.insertText(formatEntry(entry));
         m_visibleIds.push_back(entry.id);

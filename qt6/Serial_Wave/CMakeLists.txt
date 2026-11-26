@@ -28,6 +28,24 @@ target_link_libraries(serial_wave_ui PUBLIC serial_wave_backend Qt::Widgets Qt::
 qt_add_executable(Serial_Wave WIN32 MACOSX_BUNDLE main.cpp)
 target_link_libraries(Serial_Wave PRIVATE serial_wave_ui)
 
+if(APPLE)
+    # Qt's peakcan plugin loads the bare name "PCBUSB" via dlopen().
+    # MacCAN installs libPCBUSB.dylib, which that lookup does not find.
+    find_library(PCBUSB_LIBRARY NAMES PCBUSB PATHS /usr/local/lib /opt/homebrew/lib)
+    if(PCBUSB_LIBRARY)
+        add_custom_command(TARGET Serial_Wave POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_BUNDLE_DIR:Serial_Wave>/Contents/Frameworks"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PCBUSB_LIBRARY}"
+                "$<TARGET_BUNDLE_DIR:Serial_Wave>/Contents/Frameworks/PCBUSB"
+            VERBATIM)
+        install(FILES "${PCBUSB_LIBRARY}"
+            DESTINATION "Serial_Wave.app/Contents/Frameworks" RENAME PCBUSB)
+    else()
+        message(STATUS "MacCAN libPCBUSB not found; install it and reconfigure to enable PCAN on macOS")
+    endif()
+endif()
+
 include(CTest)
 if(BUILD_TESTING)
     find_package(Qt6 REQUIRED COMPONENTS Test)
