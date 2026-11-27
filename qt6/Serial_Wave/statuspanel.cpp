@@ -62,16 +62,27 @@ StatusPanel::StatusPanel(QWidget *parent) : QWidget(parent)
     title->setFont(titleFont);
     grid->addWidget(title, 0, 0, 1, 4);
 
-    // 当前值在上，均值及转速参照值在下。
     grid->addWidget(createCard(tr("当前破碎率"), &m_lblCrushRate), 1, 0);
     grid->addWidget(createCard(tr("当前含杂率"), &m_lblImpurityRate), 1, 1);
-    grid->addWidget(createCard(tr("电机转速"), &m_lblRpm), 1, 2);
-    grid->addWidget(createCard(tr("运行状态"), &m_lblRunState), 1, 3);
-
     grid->addWidget(createCard(tr("平均破碎率"), &m_lblCrushAvg), 2, 0);
     grid->addWidget(createCard(tr("平均含杂率"), &m_lblImpurityAvg), 2, 1);
-    grid->addWidget(createCard(tr("设定转速"), &m_lblRpmTarget), 2, 2);
-    grid->addWidget(createCard(tr("转速偏差"), &m_lblRpmError), 2, 3);
+
+    auto *motor = new QFrame(this);
+    motor->setObjectName("statusCard");
+    auto *motorLayout = new QVBoxLayout(motor);
+    motorLayout->setContentsMargins(8, 6, 8, 6);
+    motorLayout->setSpacing(5);
+    auto *motorTitle = new QLabel(tr("电机"), motor);
+    motorTitle->setObjectName("statusCardTitle");
+    motorLayout->addWidget(motorTitle);
+    motorLayout->addStretch();
+    motorLayout->addWidget(createStatItem(tr("实际转速"), &m_lblRpm));
+    motorLayout->addWidget(createStatItem(tr("目标转速"), &m_lblRpmTarget));
+    motorLayout->addWidget(createStatItem(tr("跟随偏差"), &m_lblRpmError));
+    m_lblRpmError->setToolTip(tr("实际转速减去目标转速"));
+    motorLayout->addWidget(createStatItem(tr("运行状态"), &m_lblRunState));
+    motorLayout->addStretch();
+    grid->addWidget(motor, 1, 2, 2, 2);
 
     auto *actuator = createCard(tr("推杆行程"), &m_lblActuatorPosition);
     m_lblActuatorPosition->setObjectName("actuatorPositionValue");
@@ -178,10 +189,6 @@ void StatusPanel::updateStatus(const MachineStatus &status)
     setValue(m_lblImpurityRate, fmt(status.impurityRate, 1, "%"));
     setValue(m_lblImpurityAvg, fmt(status.impurityRateAvg, 1, "%"));
 
-    setValue(m_lblRpm, fmt(status.rpm, 0, "rpm"));
-    setValue(m_lblRpmTarget, fmt(status.rpmTarget, 0, "rpm"));
-    setValue(m_lblRpmError, fmt(status.rpm - status.rpmTarget, 0, "rpm"));
-
     setValue(m_lblFrames, QString::number(status.frames));
     setValue(m_lblErrors, QString::number(status.errors),
              status.errors > 0 ? QColor(kColorAlarm) : QColor());
@@ -200,9 +207,6 @@ void StatusPanel::reset()
     setValue(m_lblImpurityRate, QStringLiteral("--"));
     setValue(m_lblImpurityAvg, QStringLiteral("--"));
     setValue(m_lblRunState, tr("停止"), QColor(kColorMuted));
-    setValue(m_lblRpm, QStringLiteral("--"));
-    setValue(m_lblRpmTarget, QStringLiteral("--"));
-    setValue(m_lblRpmError, QStringLiteral("--"));
     setValue(m_lblActuatorPosition, QStringLiteral("--"));
     setValue(m_lblActuatorState, tr("暂无数据"), QColor(kColorMuted));
     m_actuatorProgress->setValue(0);
@@ -253,8 +257,11 @@ void StatusPanel::refreshFreshness()
     else
         setValue(m_lblRunState, m_latest.running ? tr("运行中") : tr("停止"),
                  QColor(m_latest.running ? kColorRunning : kColorMuted));
-    for (auto *label : {m_lblCrushRate, m_lblCrushAvg, m_lblImpurityRate, m_lblImpurityAvg,
-                        m_lblRpm, m_lblRpmTarget, m_lblRpmError})
+    const bool showMotorValues = fresh || (m_playback && m_hasData);
+    setValue(m_lblRpm, fmt(showMotorValues ? m_latest.rpm : qQNaN(), 0, "rpm"));
+    setValue(m_lblRpmTarget, fmt(showMotorValues ? m_latest.rpmTarget : qQNaN(), 0, "rpm"));
+    setValue(m_lblRpmError, fmt(showMotorValues ? m_latest.rpm - m_latest.rpmTarget : qQNaN(), 0, "rpm"));
+    for (auto *label : {m_lblCrushRate, m_lblCrushAvg, m_lblImpurityRate, m_lblImpurityAvg})
     {
         const QString css = fresh ? QString() : QStringLiteral("color: #858585;");
         if (label->styleSheet() != css)

@@ -6,6 +6,7 @@
 #include "logpanel.h"
 #include "uartterminal.h"
 #include "serialpanel.h"
+#include "shellcommanddialog.h"
 #include "commandbar.h"
 #include "recordingpanel.h"
 #include "protocolparser.h"
@@ -24,12 +25,22 @@
 #include <QAction>
 #include <QToolBar>
 #include <QLineEdit>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QFrame>
+#include <QFormLayout>
+#include <QGridLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QScrollArea>
+#include <QSpinBox>
 #include <QShowEvent>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QTextBrowser>
 #include <QStackedWidget>
 #include <QTabBar>
+#include <initializer_list>
 #include <utility>
 
 namespace
@@ -54,14 +65,13 @@ QSize defaultWindowSize(QScreen *screen)
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), m_parser(std::make_unique<ProtocolParser>())
 {
-    setWindowTitle(tr("Serial Wave · 设备采集与回看"));
+    setWindowTitle(tr("迹波 · 设备数据采集与波形分析"));
     resize(defaultWindowSize(QGuiApplication::primaryScreen()));
     auto *central = new QWidget(this);
     auto *layout = new QVBoxLayout(central);
     layout->setContentsMargins(8, 8, 8, 8);
     layout->setSpacing(8);
     auto *config = new ConfigStatusPanel(central);
-    auto *sensorUart = config->serialPanel();
     auto *sensorCan = config->canPanel();
     auto *consoleUart = config->consoleSerialPanel();
     auto *consoleCan = config->consoleCanPanel();
@@ -89,6 +99,7 @@ MainWindow::MainWindow(QWidget *parent)
     const int uartTab = tabs->addTab(tr("UART"));
     const int terminalTab = tabs->addTab(tr("UART 终端"));
     const int canTab = consoleCan ? tabs->addTab(tr("CAN")) : -1;
+    const int quickTab = tabs->addTab(tr("快速设置"));
     consoleLayout->addWidget(tabs);
 
     auto *consolePages = new QStackedWidget(console);
@@ -98,8 +109,45 @@ MainWindow::MainWindow(QWidget *parent)
     commandLayout->setContentsMargins(0, 0, 0, 0);
     commandLayout->setSpacing(10);
     auto *editors = new QStackedWidget(commandPage);
+    editors->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     m_commandBar = new CommandBar(editors);
     editors->addWidget(m_commandBar);
+    const auto queueConsoleUart = [this, consoleUart](const QByteArray &payload)
+    {
+        const qint64 written = consoleUart->sendData(payload);
+        if (written == payload.size())
+            return true;
+        LogPanel::warning(tr("UART 发送未完整排队：%1/%2 字节")
+                              .arg(qMax(qint64(0), written)).arg(payload.size()));
+        return false;
+    };
+    auto *shellCommands = new ShellCommandDialog(this);
+    using ShellTransport = ShellCommandDialog::Transport;
+    shellCommands->setConnected(ShellTransport::Uart, consoleUart->isOpen());
+    connect(consoleUart, &SerialPanel::connectionChanged, shellCommands, [shellCommands](bool connected)
+    {
+        shellCommands->setConnected(ShellTransport::Uart, connected);
+    });
+    connect(consoleUart, &SerialPanel::dataReceived, shellCommands, &ShellCommandDialog::receive);
+    connect(shellCommands, &ShellCommandDialog::queryRequested, this, [this, shellCommands, queueConsoleUart]
+    {
+        if (queueConsoleUart(QByteArrayLiteral("shell-info\r")))
+            logConsoleTransmission(tr("已排队 [UART] shell-info"));
+        else
+            shellCommands->sendFailed();
+    });
+    auto *getShellCommands = new QPushButton(tr("获取命令列表…"), commandPage);
+    getShellCommands->setObjectName("getShellCommands");
+    getShellCommands->setToolTip(tr("通过控制台 UART 或 CAN 向下位机读取 shell-info"));
+    getShellCommands->setProperty("compactAction", true);
+    connect(getShellCommands, &QPushButton::clicked, shellCommands, [shellCommands, tabs, canTab]
+    {
+        shellCommands->show();
+        shellCommands->raise();
+        shellCommands->activateWindow();
+        shellCommands->queryPreferred(tabs->currentIndex() == canTab ? ShellTransport::Can
+                                                                    : ShellTransport::Uart);
+    });
     connect(consoleUart, &SerialPanel::connectionChanged, tabs, [this, tabs, uartTab, terminalTab](bool connected)
     {
         m_commandBar->setConnected(connected);
@@ -107,10 +155,39 @@ MainWindow::MainWindow(QWidget *parent)
         tabs->setTabToolTip(terminalTab, connected ? tr("UART 已连接") : tr("请先连接控制台 UART"));
     });
 
+    auto *configureCanIds = new QAction(tr("CAN ID 配置…"), this);
+    configureCanIds->setObjectName("configureCanIdsAction");
     if (consoleCan)
     {
         auto *canCommands = new CanCommandBar(editors);
         editors->addWidget(canCommands);
+        connect(consoleCan, &CanPanel::connectionChanged, shellCommands, [shellCommands](bool connected)
+        {
+            shellCommands->setConnected(ShellTransport::Can, connected);
+        });
+        connect(consoleCan, &CanPanel::frameReceived, shellCommands, &ShellCommandDialog::receiveCan);
+        connect(shellCommands, &ShellCommandDialog::canPageRequested, this,
+                [this, shellCommands, consoleCan, canCommands, txId = std::optional<quint32>{}]
+                (const QByteArray &payload) mutable
+                {
+                    const bool first = payload[1] == '\0' && payload[2] == '\0';
+                    if (first)
+                        txId = parseStandardCanId(canCommands->sendIdText());
+                    if (!txId)
+                    {
+                        shellCommands->sendFailed(tr("请先填写有效的 CAN Shell 发送 ID。"));
+                        return;
+                    }
+                    const auto error = consoleCan->sendCommand(*txId, payload);
+                    if (!error.isEmpty())
+                    {
+                        LogPanel::warning(tr("CAN shell-info 发送失败：%1").arg(error));
+                        shellCommands->sendFailed(error);
+                    }
+                    else if (first)
+                        logConsoleTransmission(tr("已排队 [CAN] %1 · shell-info (0x05)")
+                                                   .arg(formatStandardCanId(*txId)));
+                });
         connect(consoleCan, &CanPanel::connectionChanged, tabs,
                 [canCommands, tabs, canTab](bool connected)
                 {
@@ -135,12 +212,296 @@ MainWindow::MainWindow(QWidget *parent)
                                              .arg(QString::fromLatin1(payload.toHex(' ').toUpper()));
                     logConsoleTransmission(message);
                 });
+        connect(configureCanIds, &QAction::triggered, this, [this, sensorCan, consoleCan, canCommands]
+        {
+            QDialog dialog(this);
+            dialog.setObjectName("canIdConfigurationDialog");
+            dialog.setWindowTitle(tr("CAN ID 配置"));
+            auto *layout = new QVBoxLayout(&dialog);
+            auto *info = new QLabel(tr("0x 开头按十六进制读取，其余按十进制读取。"), &dialog);
+            layout->addWidget(info);
+
+            auto *form = new QFormLayout;
+            const auto current = sensorCan->sensorIdTexts();
+            auto *quality = new QLineEdit(current[0], &dialog);
+            auto *speed = new QLineEdit(current[1], &dialog);
+            auto *actuator = new QLineEdit(current[2], &dialog);
+            auto *tx = new QLineEdit(canCommands->sendIdText(), &dialog);
+            auto *rx = new QLineEdit(consoleCan->receiveIdText(), &dialog);
+            quality->setObjectName("canQualityId");
+            speed->setObjectName("canSpeedId");
+            actuator->setObjectName("canActuatorId");
+            tx->setObjectName("canShellTxId");
+            rx->setObjectName("canShellRxIds");
+            quality->setToolTip(tr("8 字节，小端 float32，依次为含杂率、破碎率（0～1）。"));
+            speed->setToolTip(tr("8 字节，小端 float32，依次为实际转速、目标转速（rpm）。"));
+            actuator->setToolTip(tr("5 字节，小端 float32 行程（0～100%）加 1 字节状态。"));
+            rx->setToolTip(tr("可输入多个 ID，以逗号或空格分隔。留空时接收所有标准数据帧。"));
+            form->addRow(tr("品质 · 含杂率 / 破碎率"), quality);
+            form->addRow(tr("电机 · 实际 / 目标转速"), speed);
+            form->addRow(tr("推杆 · 行程 / 状态"), actuator);
+            form->addRow(tr("CAN Shell · 发送 ID"), tx);
+            form->addRow(tr("CAN Shell · 接收 ID"), rx);
+            layout->addLayout(form);
+
+            auto *feedback = new QLabel(&dialog);
+            feedback->setWordWrap(true);
+            layout->addWidget(feedback);
+            auto *buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, &dialog);
+            auto *defaults = buttons->addButton(tr("恢复默认"), QDialogButtonBox::ResetRole);
+            layout->addWidget(buttons);
+            const auto canEdit = [sensorCan, consoleCan]
+            { return sensorCan->canConfigureIds() && consoleCan->canConfigureIds(); };
+            const bool editable = canEdit();
+            for (auto *edit : {quality, speed, actuator, tx, rx})
+                edit->setReadOnly(!editable);
+            defaults->setEnabled(editable);
+            buttons->button(QDialogButtonBox::Save)->setEnabled(editable);
+            if (!editable)
+                feedback->setText(tr("断开传感 CAN 和控制台 CAN 后可修改。"));
+            connect(defaults, &QPushButton::clicked, &dialog, [=]
+            {
+                quality->setText(formatStandardCanId(defaultCanQualityId));
+                speed->setText(formatStandardCanId(defaultCanSpeedId));
+                actuator->setText(formatStandardCanId(defaultCanActuatorId));
+                tx->setText(formatStandardCanId(defaultCanCommandId));
+                rx->setText(formatStandardCanId(defaultCanReplyId));
+                feedback->clear();
+            });
+            connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+            connect(buttons, &QDialogButtonBox::accepted, &dialog, [=, &dialog]
+            {
+                if (!canEdit())
+                {
+                    feedback->setText(tr("断开传感 CAN 和控制台 CAN 后可修改。"));
+                    return;
+                }
+                const std::array<QString, 3> texts{quality->text().trimmed(), speed->text().trimmed(),
+                                                   actuator->text().trimmed()};
+                QString error;
+                CanPanel::parseSensorIds(texts, error);
+                if (error.isEmpty())
+                    CanPanel::parseConsoleIds(rx->text(), error);
+                if (error.isEmpty() && !parseStandardCanId(tx->text()))
+                    error = tr("发送 ID 须为十进制 0～2047 或 0x000～0x7FF。");
+                if (!error.isEmpty())
+                {
+                    feedback->setText(error);
+                    return;
+                }
+                sensorCan->setSensorIdTexts(texts);
+                consoleCan->setConsoleReceiveIdText(rx->text().trimmed());
+                canCommands->setConfiguredSendId(tx->text().trimmed());
+                dialog.accept();
+            });
+            dialog.exec();
+        });
+        connect(sensorCan, &CanPanel::idConfigurationRequested, configureCanIds, &QAction::trigger);
+        connect(consoleCan, &CanPanel::idConfigurationRequested, configureCanIds, &QAction::trigger);
     }
 
+    auto *quickSettings = new QWidget(commandPage);
+    quickSettings->setObjectName("quickSettingsPage");
+    auto *quickLayout = new QVBoxLayout(quickSettings);
+    quickLayout->setContentsMargins(0, 0, 0, 0);
+    quickLayout->setSpacing(8);
+    quickSettings->setStyleSheet(QStringLiteral(R"(
+        QFrame[parameterCard="true"] {
+            background: #252629;
+            border: 1px solid #383b41;
+            border-radius: 8px;
+        }
+        QLabel[parameterTitle="true"] { color: #e4e9f2; font-weight: bold; }
+        QLabel[parameterUnit="true"] { color: #9da6b5; }
+        QAbstractSpinBox, QComboBox, QLineEdit { min-height: 22px; }
+        QAbstractSpinBox:focus, QComboBox:focus { border-color: #528df5; }
+        QPushButton[parameterApply="true"]:enabled {
+            background: #235fbe; border-color: #3875d2; color: white;
+        }
+        QPushButton[parameterApply="true"]:hover { background: #2d6cd0; }
+    )"));
+    auto *header = new QHBoxLayout;
+    auto *quickHint = new QLabel(quickSettings);
+    quickHint->setWordWrap(true);
+    header->addWidget(quickHint, 1);
+    auto *quickLogToggle = new QPushButton(tr("显示日志"), quickSettings);
+    quickLogToggle->setObjectName("quickLogToggle");
+    quickLogToggle->setCheckable(true);
+    header->addWidget(quickLogToggle);
+    quickLayout->addLayout(header);
+
+    auto *quickScroll = new QScrollArea(quickSettings);
+    quickScroll->setFrameShape(QFrame::NoFrame);
+    quickScroll->setWidgetResizable(true);
+    quickScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    quickScroll->setMinimumHeight(152);
+    auto *quickContent = new QWidget;
+    quickScroll->setWidget(quickContent);
+    quickLayout->addWidget(quickScroll, 1);
+    auto *cards = new QVBoxLayout(quickContent);
+    cards->setContentsMargins(0, 0, 4, 0);
+    cards->setSpacing(8);
+    const auto addCard = [cards, quickContent](const QString &title)
+    {
+        auto *card = new QFrame(quickContent);
+        card->setProperty("parameterCard", true);
+        auto *body = new QVBoxLayout(card);
+        body->setContentsMargins(12, 10, 12, 10);
+        body->setSpacing(8);
+        auto *heading = new QLabel(title, card);
+        heading->setProperty("parameterTitle", true);
+        body->addWidget(heading);
+        cards->addWidget(card);
+        return body;
+    };
+
+    auto *fields = new QGridLayout;
+    fields->setColumnStretch(1, 1);
+    addCard(tr("电机运行"))->addLayout(fields);
+    auto *speedLabel = new QLabel(tr("目标转速"), quickSettings);
+    auto *speed = new QDoubleSpinBox(quickSettings);
+    speed->setObjectName("quickTargetRpm");
+    speed->setRange(-250, 250);
+    speed->setDecimals(2);
+    speed->setSuffix(tr(" rpm"));
+    speed->setToolTip(tr("设置 PID 目标转速。0 为停机滑行。"));
+    speedLabel->setBuddy(speed);
+    auto *setSpeed = new QPushButton(tr("设置"), quickSettings);
+    setSpeed->setObjectName("quickSetSpeed");
+    auto *readSpeed = new QPushButton(tr("读取状态"), quickSettings);
+    readSpeed->setObjectName("quickReadSpeed");
+    fields->addWidget(speedLabel, 0, 0);
+    fields->addWidget(speed, 0, 1);
+    fields->addWidget(setSpeed, 0, 2);
+    fields->addWidget(readSpeed, 0, 3);
+
+    auto *pwmLabel = new QLabel(tr("手动 PWM"), quickSettings);
+    auto *pwm = new QSpinBox(quickSettings);
+    pwm->setObjectName("quickManualPwm");
+    pwm->setRange(-1000, 1000);
+    pwm->setToolTip(tr("应用后切到手动模式。0 为停机滑行。"));
+    pwmLabel->setBuddy(pwm);
+    auto *setPwm = new QPushButton(tr("设置"), quickSettings);
+    setPwm->setObjectName("quickSetPwm");
+    fields->addWidget(pwmLabel, 1, 0);
+    fields->addWidget(pwm, 1, 1);
+    fields->addWidget(setPwm, 1, 2);
+
+    auto *pidLabel = new QLabel(tr("PID 调速"), quickSettings);
+    auto *pid = new QComboBox(quickSettings);
+    pid->setObjectName("quickPidMode");
+    pid->addItem(tr("关闭并滑行"), QByteArrayLiteral("off"));
+    pid->addItem(tr("开启，按已设转速运行"), QByteArrayLiteral("on"));
+    pidLabel->setBuddy(pid);
+    auto *setPid = new QPushButton(tr("设置"), quickSettings);
+    setPid->setObjectName("quickSetPid");
+    auto *readPid = new QPushButton(tr("读取状态"), quickSettings);
+    readPid->setObjectName("quickReadPid");
+    fields->addWidget(pidLabel, 2, 0);
+    fields->addWidget(pid, 2, 1);
+    fields->addWidget(setPid, 2, 2);
+    fields->addWidget(readPid, 2, 3);
+    for (auto *button : {setSpeed, setPwm, setPid})
+        button->setProperty("parameterApply", true);
+    for (auto *button : {readSpeed, readPid})
+        button->setText(tr("读取"));
+
+    auto *pendingNote = new QLabel(tr("待接入参数 · 固件支持在线读写后可用"), quickContent);
+    pendingNote->setObjectName("hintText");
+    pendingNote->setWordWrap(true);
+    cards->addWidget(pendingNote);
+    const auto addPendingCard = [addCard, quickContent](
+        const QString &title, std::initializer_list<std::pair<QString, QString>> parameters)
+    {
+        auto *parametersGrid = new QGridLayout;
+        parametersGrid->setColumnStretch(1, 1);
+        int row = 0;
+        for (const auto &[name, unit] : parameters)
+        {
+            auto *label = new QLabel(name, quickContent);
+            auto *value = new QLineEdit(quickContent);
+            value->setPlaceholderText(QStringLiteral("—"));
+            value->setEnabled(false);
+            label->setBuddy(value);
+            auto *unitLabel = new QLabel(unit, quickContent);
+            unitLabel->setProperty("parameterUnit", true);
+            auto *set = new QPushButton(QObject::tr("设置"), quickContent);
+            set->setProperty("pendingParameter", true);
+            set->setEnabled(false);
+            parametersGrid->addWidget(label, row, 0);
+            parametersGrid->addWidget(value, row, 1);
+            parametersGrid->addWidget(unitLabel, row, 2);
+            parametersGrid->addWidget(set, row, 3);
+            ++row;
+        }
+        addCard(title)->addLayout(parametersGrid);
+    };
+    addPendingCard(tr("速度规划"), {{tr("加速度"), tr("rpm/s")},
+                                   {tr("减速度"), tr("rpm/s")},
+                                   {tr("加加速度"), tr("rpm/s²")}});
+    addPendingCard(tr("电流环"), {{QStringLiteral("Kp"), {}}, {QStringLiteral("Ki"), {}}});
+    addPendingCard(tr("速度环"), {{QStringLiteral("Kp"), {}}, {QStringLiteral("Ki"), {}},
+                                 {tr("速度前馈"), {}}, {tr("加速度前馈"), {}}, {tr("滤波等级"), {}}});
+    addPendingCard(tr("位置环"), {{QStringLiteral("Kp"), {}}, {QStringLiteral("Ki"), {}},
+                                 {QStringLiteral("Kd"), {}}});
+    cards->addStretch();
+
+    auto *quickFeedback = new QLabel(quickSettings);
+    quickFeedback->setObjectName("quickSettingsFeedback");
+    quickFeedback->setWordWrap(true);
+    quickFeedback->hide();
+    quickLayout->addWidget(quickFeedback);
+    const auto updateQuickConnection =
+        [setSpeed, readSpeed, setPwm, setPid, readPid, quickHint, quickFeedback](bool connected)
+    {
+        for (auto *button : {setSpeed, readSpeed, setPwm, setPid, readPid})
+            button->setEnabled(connected);
+        quickFeedback->clear();
+        quickFeedback->hide();
+        quickHint->setText(connected ? tr("控制台 UART 已连接")
+                                     : tr("请先连接控制台 UART"));
+    };
+    updateQuickConnection(consoleUart->isOpen());
+    connect(consoleUart, &SerialPanel::connectionChanged, quickSettings, updateQuickConnection);
+    const auto sendQuickCommand = [this, queueConsoleUart, quickFeedback](const QByteArray &command)
+    {
+        if (queueConsoleUart(command + '\r'))
+        {
+            quickFeedback->setText(tr("已排队 · %1").arg(QString::fromLatin1(command)));
+            logConsoleTransmission(tr("已排队 [UART] ") + QString::fromLatin1(command));
+        }
+        else
+            quickFeedback->setText(tr("UART 发送未完整排队"));
+        quickFeedback->show();
+    };
+    connect(setSpeed, &QPushButton::clicked, quickSettings, [speed, sendQuickCommand]
+    {
+        sendQuickCommand("speed " + QByteArray::number(speed->value(), 'f', 2));
+    });
+    connect(readSpeed, &QPushButton::clicked, quickSettings,
+            [sendQuickCommand] { sendQuickCommand("speed"); });
+    connect(setPwm, &QPushButton::clicked, quickSettings, [pwm, sendQuickCommand]
+    {
+        sendQuickCommand("pwm " + QByteArray::number(pwm->value()));
+    });
+    connect(setPid, &QPushButton::clicked, quickSettings, [pid, sendQuickCommand]
+    {
+        sendQuickCommand("pid " + pid->currentData().toByteArray());
+    });
+    connect(readPid, &QPushButton::clicked, quickSettings,
+            [sendQuickCommand] { sendQuickCommand("pid"); });
     m_logPanel = new LogPanel(commandPage);
     LogPanel::setInstance(m_logPanel);
+    connect(quickLogToggle, &QPushButton::toggled, m_logPanel, [this, quickLogToggle](bool visible)
+    {
+        quickLogToggle->setText(visible ? tr("隐藏日志") : tr("显示日志"));
+        m_logPanel->setVisible(visible);
+    });
     commandLayout->addWidget(editors);
-    commandLayout->addWidget(m_logPanel, 1);
+    commandLayout->addWidget(getShellCommands, 0, Qt::AlignRight);
+    commandLayout->addWidget(quickSettings, 1);
+    quickSettings->hide();
+    commandLayout->addWidget(m_logPanel, 2);
     consolePages->addWidget(commandPage);
     auto *terminal = new UartTerminal(consolePages);
     consolePages->addWidget(terminal);
@@ -153,7 +514,12 @@ MainWindow::MainWindow(QWidget *parent)
         }
         else
         {
-            editors->setCurrentIndex(tab == canTab ? 1 : 0);
+            const bool quick = tab == quickTab;
+            if (!quick)
+                editors->setCurrentIndex(tab == canTab ? 1 : 0);
+            editors->setVisible(!quick);
+            quickSettings->setVisible(quick);
+            m_logPanel->setVisible(!quick || quickLogToggle->isChecked());
             consolePages->setCurrentWidget(commandPage);
         }
     });
@@ -187,6 +553,7 @@ MainWindow::MainWindow(QWidget *parent)
     file->addSeparator();
     file->addAction(tr("退出"), this, &QWidget::close);
     auto *view = menuBar()->addMenu(tr("视图"));
+    view->addAction(configureCanIds);
     // 入口属于主窗口，控制台关闭后菜单、工具栏和快捷键仍可使用。
     m_consoleAction = new QAction(tr("控制台"), this);
     m_consoleAction->setObjectName("showConsoleAction");
@@ -214,12 +581,16 @@ MainWindow::MainWindow(QWidget *parent)
     m_viewToolbar->addAction(m_consoleAction);
     m_viewToolbar->addAction(reset);
     auto *searchLog = view->addAction(tr("搜索日志"), this,
-                                      [this, tabs, terminalTab, editors, uartTab, canTab]
+                                      [this, tabs, terminalTab, editors, uartTab, canTab, quickSettings,
+                                       quickTab, quickLogToggle]
                                       {
                                           m_logDock->show();
                                           m_logDock->raise();
                                           if (tabs->currentIndex() == terminalTab)
-                                              tabs->setCurrentIndex(editors->currentIndex() == 0 ? uartTab : canTab);
+                                              tabs->setCurrentIndex(!quickSettings->isHidden()
+                                                  ? quickTab : editors->currentIndex() == 0 ? uartTab : canTab);
+                                          if (tabs->currentIndex() == quickTab)
+                                              quickLogToggle->setChecked(true);
                                           auto *search =
                                               m_logPanel->findChild<QLineEdit *>("logSearch");
                                           search->setFocus();
@@ -312,10 +683,12 @@ MainWindow::MainWindow(QWidget *parent)
             });
     connect(m_recordingPanel, &RecordingPanel::exportRequested, m_wavePanel,
             &WavePanel::exportDataDialog);
-    connect(sensorUart, &SerialPanel::dataReceived, this,
-            [this](const QByteArray &data) { m_parser->feed(data); });
     connect(sensorCan, &CanPanel::frameReceived, this,
-            [this](quint32, const QByteArray &payload) { m_parser->feedCan(payload); });
+            [this, sensorCan](quint32 id, const QByteArray &payload)
+            {
+                if (const auto index = sensorCan->sensorFrameIndex(id))
+                    m_parser->feedCan(payload, ProtocolParser::CanTelemetry(*index));
+            });
     connect(consoleUart, &SerialPanel::dataReceived, this,
             [this](const QByteArray &data)
             {
@@ -363,17 +736,16 @@ MainWindow::MainWindow(QWidget *parent)
                     });
             });
     const auto onSensorConnectionChanged =
-        [this, open, sensorUart](bool connected, bool can)
+        [this, open](bool connected)
         {
             m_sensorConnected = connected;
             m_statusPanel->setConnected(connected);
             m_wavePanel->setConnected(connected);
             open->setEnabled(!connected);
-            const auto transport = can ? tr("CAN") : tr("UART");
             m_parser->resetStream();
             if (connected)
             {
-                const auto message = tr("传感 %1 已连接").arg(transport);
+                const auto message = tr("传感 CAN 已连接");
                 LogPanel::info(message);
                 if (!m_wavePanel->isRecording())
                     m_wavePanel->startRecording();
@@ -381,19 +753,14 @@ MainWindow::MainWindow(QWidget *parent)
             }
             else
             {
-                const auto message = !can && sensorUart->isWaitingForReconnect()
-                    ? tr("传感 UART 异常断开，等待原设备重连")
-                    : tr("传感 %1 已断开").arg(transport);
+                const auto message = tr("传感 CAN 已断开");
                 LogPanel::info(message);
                 m_wavePanel->addSessionEvent("disconnect", message);
                 if (m_wavePanel->stopRecording() && m_recordingPanel->autoExport())
                     autoExportRecording();
             }
         };
-    connect(sensorUart, &SerialPanel::connectionChanged, this,
-            [onSensorConnectionChanged](bool connected) { onSensorConnectionChanged(connected, false); });
-    connect(sensorCan, &CanPanel::connectionChanged, this,
-            [onSensorConnectionChanged](bool connected) { onSensorConnectionChanged(connected, true); });
+    connect(sensorCan, &CanPanel::connectionChanged, this, onSensorConnectionChanged);
     connect(consoleUart, &SerialPanel::connectionChanged, this, [this](bool connected)
     {
         if (!connected)
@@ -412,16 +779,10 @@ MainWindow::MainWindow(QWidget *parent)
             LogPanel::info(connected ? tr("控制台 CAN 已连接") : tr("控制台 CAN 已断开"));
         });
     connect(m_commandBar, &CommandBar::commandSubmitted, this,
-            [this, consoleUart](const QByteArray &payload)
+            [this, queueConsoleUart](const QByteArray &payload)
             {
-                const qint64 written = consoleUart->sendData(payload);
-                if (written != payload.size())
-                {
-                    LogPanel::warning(tr("UART 发送未完整排队：%1/%2 字节")
-                                          .arg(qMax(qint64(0), written))
-                                          .arg(payload.size()));
+                if (!queueConsoleUart(payload))
                     return;
-                }
                 const auto data = m_commandBar->isHexMode()
                     ? QStringLiteral("[HEX] ") + QString::fromLatin1(payload.toHex(' ').toUpper())
                     : QString::fromUtf8(payload);

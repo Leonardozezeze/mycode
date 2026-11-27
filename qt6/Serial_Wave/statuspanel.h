@@ -31,17 +31,17 @@ private:
     QFrame *createStatItem(const QString &key, QLabel **valueLabel);
     void setValue(QLabel *label, const QString &text, const QColor &color = QColor());
 
-    // 第一组：破碎率 / 转速 / 运行状态
+    // 品质
     QLabel *m_lblCrushRate = nullptr;
     QLabel *m_lblCrushAvg = nullptr;
-    QLabel *m_lblRpm = nullptr;
-    QLabel *m_lblRunState = nullptr;
-
-    // 第二组：含杂率 / 电机
     QLabel *m_lblImpurityRate = nullptr;
     QLabel *m_lblImpurityAvg = nullptr;
+
+    // 电机与推杆
+    QLabel *m_lblRpm = nullptr;
     QLabel *m_lblRpmTarget = nullptr;
     QLabel *m_lblRpmError = nullptr;
+    QLabel *m_lblRunState = nullptr;
     QLabel *m_lblActuatorPosition = nullptr;
     QLabel *m_lblActuatorState = nullptr;
     QProgressBar *m_actuatorProgress = nullptr;

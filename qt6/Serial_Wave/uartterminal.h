@@ -44,6 +44,7 @@ private:
     QComboBox *m_backspace;
     QLabel *m_status;
     QTextCursor m_output;
+    QTextCursor m_savedCursor;
     QTextCharFormat m_format;
     QStringDecoder m_decoder{QStringDecoder::Utf8};
     EscapeState m_escape = EscapeState::Text;

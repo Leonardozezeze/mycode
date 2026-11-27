@@ -267,7 +267,16 @@ void UartTerminal::receiveControl(QChar ch)
             m_escape = EscapeState::Csi;
         }
         else
+        {
             m_escape = ch == ']' ? EscapeState::Osc : EscapeState::Text;
+            if (ch == '7')
+            {
+                m_savedCursor = m_output;
+                m_savedCursor.setKeepPositionOnInsert(true);
+            }
+            else if (ch == '8' && !m_savedCursor.isNull())
+                m_output.setPosition(m_savedCursor.position());
+        }
         return;
     case EscapeState::Csi:
         if (ch >= '@' && ch <= '~')
@@ -448,6 +457,7 @@ void UartTerminal::writeText(QStringView text)
 
 void UartTerminal::clearScreen()
 {
+    m_savedCursor = {};
     m_output.select(QTextCursor::Document);
     m_output.removeSelectedText();
     m_view->updateCaret(m_output, m_connected);

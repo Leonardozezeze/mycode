@@ -4,5 +4,4 @@
 pub mod adc_seed;
 pub mod dwt;
 pub mod uart;
-pub mod liner_actuator;
 pub mod can;

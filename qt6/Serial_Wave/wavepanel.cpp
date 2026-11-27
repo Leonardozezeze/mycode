@@ -7,6 +7,7 @@
 #include <QtConcurrentRun>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QMouseEvent>
 #include <QPushButton>
 #include <QComboBox>
 #include <QSplitter>
@@ -51,6 +52,7 @@ WavePanel::WavePanel(QWidget *parent)
     : QWidget(parent), m_replotTimer(new QTimer(this)), m_saveTimer(new QTimer(this)),
       m_viewTimer(new QTimer(this)), m_archive(sampleChannelCount)
 {
+    m_lastChannelTimes.fill(-1);
     QSettings settings;
     m_recordingDirectory =
         settings
@@ -93,6 +95,7 @@ WavePanel::WavePanel(QWidget *parent)
     auto *png = new QPushButton(tr("导出 PNG"), this);
     auto *channels = new QPushButton(tr("通道与坐标"), this);
     channels->setObjectName("channelSettingsButton");
+    channels->setToolTip(tr("设置通道颜色和坐标范围，也可点击波形图例切换通道显示。"));
     connect(channels, &QPushButton::clicked, this, &WavePanel::configureChannels);
     for (auto *button : {m_pauseBtn, latest})
         bar->addWidget(button);
@@ -191,6 +194,24 @@ WavePanel::WavePanel(QWidget *parent)
             g->setVisible(visible);
             plot->legend->itemWithPlottable(g)->setTextColor(visible ? QColor(THEME_TEXT) : QColor(100, 100, 100));
         }
+        connect(plot, &QCustomPlot::legendClick, this,
+                [this, plot, p](QCPLegend *, QCPAbstractLegendItem *item, QMouseEvent *event)
+                {
+                    if (event->button() != Qt::LeftButton)
+                        return;
+                    auto *entry = qobject_cast<QCPPlottableLegendItem *>(item);
+                    if (!entry)
+                        return;
+                    for (int c = 0; c < plot->graphCount(); ++c)
+                    {
+                        auto *graph = plot->graph(c);
+                        if (entry->plottable() == graph)
+                        {
+                            setChannelVisible(p * 2 + c, !graph->visible());
+                            return;
+                        }
+                    }
+                });
         for (int i = 0; i < 32; ++i)
         {
             auto *marker = new QCPItemLine(plot);
@@ -450,6 +471,7 @@ void WavePanel::startRecording()
     m_eventClock.start();
     rebuildEventModel();
     m_recent.clear();
+    m_lastChannelTimes.fill(-1);
     m_playback = false;
     m_recording = true;
     m_storageError = false;
@@ -516,6 +538,8 @@ void WavePanel::reportStorageError(const QString &message)
 
 void WavePanel::addSample(const TelemetrySample &sample)
 {
+    if (!m_recording)
+        return;
     const auto values = sample.values();
     addData(sample.time, QVector<double>(values.begin(), values.end()));
 }
@@ -526,12 +550,12 @@ void WavePanel::addData(double x, const QVector<double> &values)
         return;
     SamplePoint p;
     p.time = x;
-    p.breakBefore = !m_recent.empty() && x - m_recent.back().time > 2.0;
     if (m_recent.empty())
         m_cursorInfo->setText(
             tr("移动鼠标查看采样值；拖动或滚轮回看；Ctrl+滚轮缩放 Y，Shift+拖动平移 Y。"));
     for (int c = 0; c < sampleChannelCount; ++c)
         p.values[c] = c < values.size() ? values[c] : qQNaN();
+    p.markChannelGaps(m_lastChannelTimes, 2.0);
     m_recent.push_back(p);
     while (m_recent.size() > 60000 || (!m_recent.empty() && m_recent.front().time < x - 60))
         m_recent.pop_front();
@@ -558,37 +582,45 @@ void WavePanel::appendToGraphs(const SamplePoint &p)
     for (int i = 0; i < waveformPlotCount; ++i)
         for (int c = 0; c < plotGraphCounts[i]; ++c)
         {
+            const int channel = i * 2 + c;
+            if (!p.hasPlotPoint(channel))
+                continue;
             auto *graph = m_plots[i]->graph(c);
-            if (graph->dataCount() && p.breakBefore)
+            if (graph->dataCount() && p.breakBefore[channel])
                 graph->addData((graph->data()->constEnd() - 1)->key + 1e-9, qQNaN());
-            graph->addData(p.time, p.values[i * 2 + c]);
+            graph->addData(p.time, p.values[channel]);
         }
 }
 
 void WavePanel::setPoints(const QVector<SamplePoint> &points)
 {
-    QVector<double> x;
-    std::array<QVector<double>, waveformChannelCount> values;
-    x.reserve(points.size());
-    for (auto &v : values)
-        v.reserve(points.size());
-    double previous = -1;
-    for (const auto &p : points)
-    {
-        if (previous >= 0 && p.breakBefore)
-        {
-            x.append(previous + 1e-9);
-            for (auto &v : values)
-                v.append(qQNaN());
-        }
-        x.append(p.time);
-        for (int c = 0; c < waveformChannelCount; ++c)
-            values[c].append(p.values[c]);
-        previous = p.time;
-    }
     for (int p = 0; p < waveformPlotCount; ++p)
         for (int c = 0; c < plotGraphCounts[p]; ++c)
-            m_plots[p]->graph(c)->setData(x, values[p * 2 + c], true);
+        {
+            const int channel = p * 2 + c;
+            QVector<double> x;
+            QVector<double> y;
+            x.reserve(points.size());
+            y.reserve(points.size());
+            for (const auto &point : points)
+            {
+                if (!point.hasPlotPoint(channel))
+                    continue;
+                if (!x.isEmpty() && point.breakBefore[channel])
+                {
+                    x.append(x.last() + 1e-9);
+                    y.append(qQNaN());
+                }
+                x.append(point.time);
+                y.append(point.values[channel]);
+            }
+            if (x.isEmpty() && !points.isEmpty())
+            {
+                x.append(points.first().time);
+                y.append(qQNaN());
+            }
+            m_plots[p]->graph(c)->setData(x, y, true);
+        }
 }
 
 void WavePanel::setRange(double lo, double hi)
@@ -803,6 +835,7 @@ bool WavePanel::openSession(const QString &path)
         LogPanel::warning(tr("已恢复完整事件，忽略事件文件末尾未写完的一行。"));
     rebuildEventModel();
     m_recent.clear();
+    m_lastChannelTimes.fill(-1);
     m_playback = true;
     m_storageError = false;
     m_pauseBtn->setChecked(true);

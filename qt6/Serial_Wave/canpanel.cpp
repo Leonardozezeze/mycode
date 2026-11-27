@@ -65,6 +65,15 @@ QString formatBitrate(int bitrate)
 }
 } // namespace
 
+namespace
+{
+const QRegularExpression &receiveIdSeparators()
+{
+    static const QRegularExpression separators(QStringLiteral("[,，\\s]+"));
+    return separators;
+}
+}
+
 CanPanel::CanPanel(QWidget *parent, Role role)
     : QWidget(parent), m_role(role),
       m_settingsGroup(role == Role::Sensor ? QStringLiteral("can") : QStringLiteral("console/can"))
@@ -95,27 +104,51 @@ CanPanel::CanPanel(QWidget *parent, Role role)
 #endif
     QString savedIds;
     if (m_role == Role::Sensor)
-        savedIds = settings.value("id", "0x123").toString();
+    {
+        savedIds = settings.value("id", formatStandardCanId(defaultCanQualityId)).toString();
+        m_speedIdText = settings.value("speedId", formatStandardCanId(defaultCanSpeedId)).toString();
+        m_actuatorIdText = settings.value("actuatorId", formatStandardCanId(defaultCanActuatorId)).toString();
+    }
     else
     {
-        // 旧版控制台的单个 ID 可能按十进制保存，迁移时保留实际数值。
-        const auto previousId = parseStandardCanId(settings.value("id").toString());
-        const auto legacy = previousId ? QString::number(*previousId, 16).toUpper() : QString();
-        savedIds = settings.value("receiveIds", legacy).toString();
+        if (settings.contains("receiveIdText"))
+            savedIds = settings.value("receiveIdText").toString();
+        else if (settings.contains("receiveIds"))
+        {
+            QStringList migrated;
+            for (const auto &entry : settings.value("receiveIds").toString()
+                                         .split(receiveIdSeparators(), Qt::SkipEmptyParts))
+            {
+                const auto id = parseLegacyHexCanId(entry);
+                migrated.append(id ? formatStandardCanId(*id) : entry);
+            }
+            savedIds = migrated.join(QStringLiteral(", "));
+        }
+        else if (const auto id = parseStandardCanId(settings.value("id").toString()))
+            savedIds = formatStandardCanId(*id);
+        else
+            savedIds = formatStandardCanId(defaultCanReplyId);
     }
     m_canId = new QLineEdit(savedIds, this);
     m_canId->setObjectName("canId");
     if (m_role == Role::Console)
     {
-        m_canId->setPlaceholderText(tr("如 651, 652, 7FF"));
-        m_canId->setToolTip(tr("标准帧 ID 为 11 位，以十六进制填写 000～7FF，可带 0x。"
+        m_canId->setPlaceholderText(tr("如 0x651, 1618, 0x7FF"));
+        m_canId->setToolTip(tr("标准帧 ID 为 11 位，0x 开头按十六进制读取，其余按十进制读取。"
                              "多个 ID 用逗号或空格分隔，留空接收所有标准数据帧。"));
     }
     else
         m_canId->setToolTip(tr("11 位标准帧 ID。0x 开头表示十六进制，其余按十进制读取。"));
     auto *form = new QFormLayout;
     form->addRow(formLabel(tr("接口"), this), m_interface);
-    form->addRow(formLabel(tr("接收 ID"), this), m_canId);
+    auto *idRow = new QHBoxLayout;
+    idRow->addWidget(m_canId, 1);
+    auto *configureIds = new QPushButton(tr("ID 配置…"), this);
+    configureIds->setToolTip(tr("配置传感报文与 CAN Shell 的 ID"));
+    configureIds->setProperty("compactAction", true);
+    connect(configureIds, &QPushButton::clicked, this, &CanPanel::idConfigurationRequested);
+    idRow->addWidget(configureIds);
+    form->addRow(formLabel(m_role == Role::Sensor ? tr("品质 ID") : tr("接收 ID"), this), idRow);
 #ifndef Q_OS_LINUX
     m_bitrateInput = new QLineEdit(settings.value("bitrate", "500000").toString(), this);
     m_bitrateInput->setObjectName("canBitrateInput");
@@ -123,13 +156,11 @@ CanPanel::CanPanel(QWidget *parent, Role role)
     form->addRow(formLabel(tr("波特率"), this), m_bitrateInput);
 #endif
     layout->addLayout(form);
+    m_receiveIdStatus = new QLabel(this);
+    m_receiveIdStatus->setObjectName("canReceiveIdStatus");
+    m_receiveIdStatus->setWordWrap(true);
     if (m_role == Role::Console)
-    {
-        m_receiveIdStatus = new QLabel(this);
-        m_receiveIdStatus->setObjectName("canReceiveIdStatus");
-        m_receiveIdStatus->setWordWrap(true);
         layout->addWidget(m_receiveIdStatus);
-    }
 
     m_connect = new QPushButton(tr("连接"), this);
     m_connect->setObjectName("primaryButton");
@@ -180,15 +211,15 @@ CanPanel::CanPanel(QWidget *parent, Role role)
     m_lastReceived = addReadout(tr("最近"), "canLastReceive", 1, 2);
     layout->addWidget(diagnostics);
 
-    auto *frameFormat = new QLabel(m_role == Role::Sensor
-        ? tr("DLC 8 · 0～3 含杂率 · 4～7 破碎率")
-        : tr("命令号 1 字节 · 参数 0～7 字节"), this);
-    frameFormat->setObjectName("deviceDesc");
-    frameFormat->setWordWrap(true);
     if (m_role == Role::Sensor)
-        frameFormat->setToolTip(tr("11 位标准帧。字节 0～3 是含杂率，4～7 是破碎率。"
-                                   "两个字段都是小端 float32，传输 0～1 的比例。"));
-    layout->addWidget(frameFormat);
+        layout->addWidget(m_receiveIdStatus);
+    else
+    {
+        auto *frameFormat = new QLabel(tr("命令号 1 字节 · 参数 0～7 字节"), this);
+        frameFormat->setObjectName("deviceDesc");
+        frameFormat->setWordWrap(true);
+        layout->addWidget(frameFormat);
+    }
     layout->addStretch();
 
     connect(m_connect, &QPushButton::clicked, this, &CanPanel::toggleConnection);
@@ -331,34 +362,89 @@ void CanPanel::refreshTraffic()
         ? m_lastReceivedAt.toString(QStringLiteral("HH:mm:ss.zzz")) : QStringLiteral("--"));
 }
 
+QString CanPanel::receiveIdText() const
+{
+    return m_canId->text();
+}
+
+std::array<QString, 3> CanPanel::sensorIdTexts() const
+{
+    return {receiveIdText(), m_speedIdText, m_actuatorIdText};
+}
+
+void CanPanel::setSensorIdTexts(const std::array<QString, 3> &texts)
+{
+    m_speedIdText = texts[1];
+    m_actuatorIdText = texts[2];
+    m_canId->setText(texts[0]);
+    QSettings settings;
+    settings.beginGroup(m_settingsGroup);
+    settings.setValue("id", texts[0]);
+    settings.setValue("speedId", texts[1]);
+    settings.setValue("actuatorId", texts[2]);
+    refreshReceiveIds();
+}
+
+void CanPanel::setConsoleReceiveIdText(const QString &text)
+{
+    m_canId->setText(text);
+    QSettings().setValue(m_settingsGroup + QStringLiteral("/receiveIdText"), text);
+}
+
+std::optional<int> CanPanel::sensorFrameIndex(quint32 id) const
+{
+    const auto index = (m_device ? m_filterIds : m_sensorIds).indexOf(id);
+    return index >= 0 ? std::optional<int>(int(index)) : std::nullopt;
+}
+
+QList<quint32> CanPanel::parseSensorIds(const std::array<QString, 3> &texts, QString &error)
+{
+    QList<quint32> ids;
+    for (const auto &text : texts)
+    {
+        const auto id = parseStandardCanId(text);
+        if (!id)
+        {
+            error = tr("传感 ID 须为十进制 0～2047 或 0x000～0x7FF。");
+            return {};
+        }
+        if (ids.contains(*id))
+        {
+            error = tr("品质、转速和推杆的 ID 必须互不相同。");
+            return {};
+        }
+        ids.append(*id);
+    }
+    return ids;
+}
+
 QList<quint32> CanPanel::receiveIds(QString &error) const
 {
-    const auto text = m_canId->text().trimmed();
-    if (m_role == Role::Sensor)
-    {
-        if (const auto id = parseStandardCanId(text))
-            return {*id};
-        error = tr("请输入 0～2047 或 0x000～0x7FF 的标准帧 ID。");
-        return {};
-    }
+    return m_role == Role::Sensor
+        ? parseSensorIds(sensorIdTexts(), error)
+        : parseConsoleIds(receiveIdText(), error);
+}
+
+QList<quint32> CanPanel::parseConsoleIds(const QString &input, QString &error)
+{
+    const auto text = input.trimmed();
     if (text.isEmpty())
         return {};
 
-    static const QRegularExpression separators(QStringLiteral("[,，\\s]+"));
-    const auto entries = text.split(separators, Qt::SkipEmptyParts);
+    const auto entries = text.split(receiveIdSeparators(), Qt::SkipEmptyParts);
     if (entries.isEmpty())
     {
-        error = tr("请填写十六进制 ID，或清空以接收所有标准数据帧。");
+        error = tr("请填写接收 ID，或清空以接收所有标准数据帧。");
         return {};
     }
 
     QList<quint32> ids;
     for (const auto &entry : entries)
     {
-        const auto id = parseStandardHexCanId(entry);
+        const auto id = parseStandardCanId(entry);
         if (!id)
         {
-            error = tr("接收 ID 须在十六进制 000～7FF 范围内，例如 651, 652。");
+            error = tr("接收 ID 须为十进制 0～2047 或 0x000～0x7FF。");
             return {};
         }
         if (!ids.contains(*id))
@@ -376,9 +462,14 @@ void CanPanel::refreshReceiveIds()
 {
     QString error;
     const auto ids = receiveIds(error);
+    if (m_role == Role::Sensor)
+        m_sensorIds = ids;
     m_connect->setEnabled(m_connected || error.isEmpty());
     if (!error.isEmpty())
         m_receiveIdStatus->setText(error);
+    else if (m_role == Role::Sensor)
+        m_receiveIdStatus->setText(tr("转速 %1 · 推杆 %2")
+                                       .arg(formatStandardCanId(ids[1]), formatStandardCanId(ids[2])));
     else if (ids.isEmpty())
         m_receiveIdStatus->setText(tr("接收所有标准数据帧"));
     else
@@ -517,7 +608,7 @@ void CanPanel::handleConnected()
     QSettings settings;
     settings.beginGroup(m_settingsGroup);
     settings.setValue("interface", name);
-    settings.setValue(m_role == Role::Sensor ? "id" : "receiveIds", m_canId->text().trimmed());
+    settings.setValue(m_role == Role::Sensor ? "id" : "receiveIdText", m_canId->text().trimmed());
 #ifndef Q_OS_LINUX
     settings.setValue("bitrate", m_bitrateInput->text().trimmed());
 #endif

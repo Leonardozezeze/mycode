@@ -2,7 +2,6 @@
 //! TIM2 由 embassy-time 独占；TIM1/TIM3/TIM4 留给电机和编码器。
 
 use crate::drivers::{
-    liner_actuator::LinearActuator,
     uart::{UartLink, init_uart},
 };
 use embassy_executor::Spawner;
@@ -32,8 +31,6 @@ pub struct Devices {
     /// ADC1 和悬空 PA0 仅在启动时用于采集种子噪声。
     pub adc1: Adc<'static, peripherals::ADC1>,
     pub adc_noise_pin: Peri<'static, peripherals::PA0>,
-    /// K1 接 PB4（伸出），K2 接 PB5（缩回），低电平有效。
-    pub linear_actuator: LinearActuator,
     pub can:Can<'static>,
 }
 
@@ -63,11 +60,6 @@ pub fn init(spawner: Spawner) -> Devices {
     let red_led = Output::new(p.PC14, Level::High, Speed::Low);
     let green_led = Output::new(p.PC13, Level::High, Speed::Low);
 
-    // 开漏初始释放两个控制端，直到推杆任务开始回零才拉低 K2。
-    let k1 = OutputOpenDrain::new(p.PB4, Level::High, Speed::Low);
-    let k2 = OutputOpenDrain::new(p.PB5, Level::High, Speed::Low);
-    let linear_actuator = LinearActuator::new(k1, k2);
-
     let uart_config = usart::Config::default(); // 115200、8N1
     let uart1 = Uart::new(
         p.USART1,
@@ -92,7 +84,6 @@ pub fn init(spawner: Spawner) -> Devices {
         uart1,
         adc1,
         adc_noise_pin: p.PA0,
-        linear_actuator,
         can,
     }
 }

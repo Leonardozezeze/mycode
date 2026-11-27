@@ -71,6 +71,10 @@ LogPanel::LogPanel(QWidget *parent) : QWidget(parent)
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(5);
     auto *toolbar = new QHBoxLayout;
+    m_search = new QLineEdit(this);
+    m_search->setObjectName("logSearch");
+    m_search->setPlaceholderText(tr("搜索日志…"));
+    m_search->setClearButtonEnabled(true);
     m_pause = new QPushButton(tr("冻结日志"), this);
     m_pause->setCheckable(true);
     m_pause->setObjectName("freezeLogButton");
@@ -81,16 +85,14 @@ LogPanel::LogPanel(QWidget *parent) : QWidget(parent)
     saveMenu->addAction(tr("保存当前筛选"), this, [this] { saveDialog(true); });
     saveMenu->addAction(tr("保存全部缓冲"), this, [this] { saveDialog(false); });
     save->setMenu(saveMenu);
-    toolbar->addStretch();
+    for (auto *button : {m_pause, clearButton, save})
+        button->setProperty("compactAction", true);
+    toolbar->addWidget(m_search, 1);
     toolbar->addWidget(m_pause);
     toolbar->addWidget(clearButton);
     toolbar->addWidget(save);
     layout->addLayout(toolbar);
     auto *filters = new QHBoxLayout;
-    m_search = new QLineEdit(this);
-    m_search->setObjectName("logSearch");
-    m_search->setPlaceholderText(tr("搜索日志…"));
-    m_search->setClearButtonEnabled(true);
     m_levels = new QComboBox(this);
     m_levels->setObjectName("logLevelFilter");
     m_levels->addItem(tr("全部级别"), -1);
@@ -104,12 +106,6 @@ LogPanel::LogPanel(QWidget *parent) : QWidget(parent)
     m_channels->addItem(tr("控制台 RX"), int(Channel::Receive));
     m_channels->addItem(tr("发送 TX"), int(Channel::Transmit));
     m_channels->addItem(tr("系统"), int(Channel::System));
-    filters->addWidget(m_search, 1);
-    filters->addWidget(m_levels);
-    filters->addWidget(m_channels);
-    layout->addLayout(filters);
-    auto *display = new QHBoxLayout;
-    display->addWidget(new QLabel(tr("接收显示"), this));
     m_receiveMode = new QComboBox(this);
     m_receiveMode->setObjectName("receiveLogMode");
     m_receiveMode->addItems({tr("文本日志"), tr("原始 HEX"), tr("关闭接收日志")});
@@ -121,11 +117,19 @@ LogPanel::LogPanel(QWidget *parent) : QWidget(parent)
     auto *wrap = new QCheckBox(tr("换行"), this);
     wrap->setObjectName("wrapLogCheck");
     wrap->setChecked(settings.value("console/wrap", true).toBool());
-    display->addWidget(m_receiveMode);
-    display->addStretch();
+    for (auto *combo : {m_levels, m_channels, m_receiveMode})
+    {
+        combo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        filters->addWidget(combo, 1);
+    }
+    layout->addLayout(filters);
+    auto *display = new QHBoxLayout;
+    m_summary = new QLabel(this);
+    m_summary->setObjectName("hintText");
+    m_summary->setWordWrap(true);
+    display->addWidget(m_summary, 1);
     display->addWidget(m_follow);
     display->addWidget(wrap);
-    layout->addLayout(display);
     m_view = new QPlainTextEdit(this);
     m_view->setObjectName("logView");
     m_view->setReadOnly(true);
@@ -134,9 +138,7 @@ LogPanel::LogPanel(QWidget *parent) : QWidget(parent)
     m_view->setLineWrapMode(wrap->isChecked() ? QPlainTextEdit::WidgetWidth
                                               : QPlainTextEdit::NoWrap);
     layout->addWidget(m_view, 1);
-    m_summary = new QLabel(this);
-    m_summary->setObjectName("hintText");
-    layout->addWidget(m_summary);
+    layout->addLayout(display);
     auto *searchTimer = new QTimer(this);
     searchTimer->setSingleShot(true);
     searchTimer->setInterval(150);

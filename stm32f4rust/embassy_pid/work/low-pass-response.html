@@ -1,0 +1,73 @@
+<section id="encoder-low-pass-response" aria-labelledby="encoder-low-pass-heading">
+  <style>
+    #encoder-low-pass-response h2 { margin-bottom: calc(var(--font-size-base) * .5); }
+    #encoder-low-pass-response .legend { display: flex; flex-wrap: wrap; gap: calc(var(--font-size-base) * .75); }
+    #encoder-low-pass-response .legend span { display: inline-flex; align-items: center; gap: .45em; }
+    #encoder-low-pass-response .legend i { display: inline-block; width: 1.4em; border-top: 2px solid var(--viz-series-1); }
+    #encoder-low-pass-response .legend .raw i { border-top: 2px dashed var(--viz-series-2); }
+    #encoder-low-pass-response svg { display: block; width: 100%; height: 196px; overflow: visible; }
+    #encoder-low-pass-response .grid { stroke: var(--border); }
+    #encoder-low-pass-response .label { fill: var(--muted-foreground); }
+    #encoder-low-pass-response .raw-line { fill: none; stroke: var(--viz-series-2); stroke-width: 2px; stroke-dasharray: 4 4; }
+    #encoder-low-pass-response .filtered-line { fill: none; stroke: var(--viz-series-1); stroke-width: 2.5px; }
+  </style>
+  <h2 id="encoder-low-pass-heading">一阶低通的速度响应</h2>
+  <div class="legend text-small">
+    <span class="raw"><i aria-hidden="true"></i>原始速度</span>
+    <span><i aria-hidden="true"></i>滤波速度，τ = 30 ms</span>
+  </div>
+  <svg role="img" aria-label="模拟转速从约 100 RPM 上升到约 140 RPM。滤波曲线减少了逐次采样的抖动，并逐渐跟上升速。" class="text-small tabular-nums"></svg>
+  <script>
+    (() => {
+      const root = document.getElementById('encoder-low-pass-response');
+      const plot = root.querySelector('svg');
+      const raw = [100, 109, 91, 109, 93, 103, 96, 145, 131, 150, 135, 144, 128, 146, 136, 150, 131, 145, 134, 143, 136, 145, 133, 142];
+      const interval = 10;
+      const timeConstant = 30;
+      const alpha = interval / (timeConstant + interval);
+      const filtered = [raw[0]];
+      for (const rpm of raw.slice(1)) {
+        filtered.push((1 - alpha) * filtered.at(-1) + alpha * rpm);
+      }
+
+      function draw(width) {
+        const left = 31;
+        const right = width - 10;
+        const top = 34;
+        const bottom = 151;
+        const x = ms => left + (right - left) * ms / ((raw.length - 1) * interval);
+        const y = rpm => bottom - (bottom - top) * (rpm - 80) / 80;
+        plot.replaceChildren();
+        plot.setAttribute('viewBox', `0 0 ${width} 196`);
+
+        function mark(tag, attributes, label) {
+          const node = document.createElementNS('http://www.w3.org/2000/svg', tag);
+          for (const [key, value] of Object.entries(attributes)) {
+            node.setAttribute(key, value);
+          }
+          if (label !== undefined) node.textContent = label;
+          plot.append(node);
+        }
+
+        for (const rpm of [80, 100, 120, 140, 160]) {
+          const height = y(rpm);
+          mark('line', { class: 'grid', x1: left, x2: right, y1: height, y2: height });
+          mark('text', { class: 'label', x: left - 6, y: height + 4, 'text-anchor': 'end' }, rpm);
+        }
+        for (const ms of [0, 50, 100, 150, 200]) {
+          mark('text', { class: 'label', x: x(ms), y: bottom + 18, 'text-anchor': 'middle' }, ms);
+        }
+        mark('text', { class: 'label', x: 0, y: 16 }, 'RPM');
+        mark('text', { class: 'label', x: right, y: 192, 'text-anchor': 'end' }, '时间（ms）');
+
+        for (const [values, name] of [[raw, 'raw-line'], [filtered, 'filtered-line']]) {
+          const points = values.map((rpm, index) => `${x(index * interval)},${y(rpm)}`).join(' ');
+          mark('polyline', { class: name, points });
+        }
+      }
+
+      draw(plot.clientWidth || 320);
+      new ResizeObserver(([entry]) => draw(entry.contentRect.width)).observe(plot);
+    })();
+  </script>
+</section>

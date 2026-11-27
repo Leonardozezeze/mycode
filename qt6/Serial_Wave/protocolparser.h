@@ -6,6 +6,7 @@
 #include <QtNumeric>
 
 #include <functional>
+#include <optional>
 #include <utility>
 
 #include "machinestatus.h"
@@ -35,6 +36,7 @@ public:
     using FrameHandler = std::function<void(const ProtocolFrame &)>;
     using StatusHandler = std::function<void(const MachineStatus &)>;
     using TextHandler = std::function<void(const QByteArray &)>;
+    enum class CanTelemetry { Quality, Speed, Actuator };
 
     ProtocolParser();
 
@@ -44,8 +46,7 @@ public:
 
     // 串口收到多少喂多少；半帧会留在内部缓冲里等下一批字节
     void feed(const QByteArray &data);
-    // 每次传入一个已按 CAN ID 过滤的数据帧：小端 float32 含杂率、破碎率。
-    void feedCan(const QByteArray &payload);
+    void feedCan(const QByteArray &payload, CanTelemetry kind = CanTelemetry::Quality);
 
     // 断开串口时调用：清掉残留半帧和速率统计窗口。
     // 不重置本次会话时间和累计值。
@@ -57,7 +58,7 @@ public:
     quint64 errorCount() const { return m_errors; }
 
 private:
-    void handleFrame(TelemetrySample frame);
+    void handleFrame(TelemetrySample frame, std::optional<CanTelemetry> kind = std::nullopt);
 
     QElapsedTimer m_sessionClock;
     QByteArray m_buffer;
@@ -68,6 +69,9 @@ private:
 
     double m_crushSum = 0.0;
     double m_impuritySum = 0.0;
+    quint64 m_qualityFrames = 0;
+    TelemetrySample m_latestCan;
+    std::array<double, 3> m_canUpdateTime{};
 
     QElapsedTimer m_rateClock; // 测更新频率用
     quint64 m_rateFrames = 0;

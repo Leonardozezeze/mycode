@@ -14,7 +14,6 @@ class ConfigStatusPanel : public QWidget
 public:
     explicit ConfigStatusPanel(QWidget *parent = nullptr);
 
-    SerialPanel *serialPanel() const;
     CanPanel *canPanel() const;
     SerialPanel *consoleSerialPanel() const;
     CanPanel *consoleCanPanel() const;
@@ -27,7 +26,6 @@ private:
     QWidget* createConfigWidget();
     QWidget* createSensorConfig();
 
-    SerialPanel    *m_serialPanel    = nullptr;
     CanPanel       *m_canPanel       = nullptr;
     SerialPanel    *m_consoleSerialPanel = nullptr;
     CanPanel       *m_consoleCanPanel = nullptr;

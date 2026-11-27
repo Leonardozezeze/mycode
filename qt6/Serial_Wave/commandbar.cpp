@@ -355,13 +355,15 @@ CanCommandBar::CanCommandBar(QWidget *parent) : QWidget(parent)
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(5);
     auto *form = new QFormLayout;
-    const QString defaultSendId = formatStandardCanId(defaultCanCommandId).mid(2);
-    const QString savedSendId =
-        QSettings().value(QStringLiteral("command/canSendId"), defaultSendId).toString();
-    m_sendId = new QLineEdit(parseStandardHexCanId(savedSendId) ? savedSendId : defaultSendId, this);
+    const auto defaultSendId = formatStandardCanId(defaultCanCommandId);
+    const QSettings settings;
+    const auto legacyId = parseLegacyHexCanId(settings.value("command/canSendId").toString());
+    const auto savedSendId = settings.value("command/canSendIdText",
+                                           legacyId ? formatStandardCanId(*legacyId) : defaultSendId).toString();
+    m_sendId = new QLineEdit(parseStandardCanId(savedSendId) ? savedSendId : defaultSendId, this);
     m_sendId->setObjectName("canSendId");
-    m_sendId->setPlaceholderText(tr("十六进制 000～7FF"));
-    m_sendId->setToolTip(tr("填写目标设备的标准帧 ID，例如 401 或 0x401。"));
+    m_sendId->setPlaceholderText(tr("如 1025 或 0x401"));
+    m_sendId->setToolTip(tr("0x 开头按十六进制读取，其余按十进制读取。"));
     form->addRow(tr("发送 ID"), m_sendId);
 
     m_command = new QLineEdit(this);
@@ -443,12 +445,12 @@ QByteArray CanCommandBar::commandPayload(QString &error, qsizetype *parameterCou
 
 void CanCommandBar::updateEditor()
 {
-    const auto id = parseStandardHexCanId(m_sendId->text());
+    const auto id = parseStandardCanId(m_sendId->text());
     QString error;
     qsizetype parameterCount = -1;
     const auto payload = commandPayload(error, &parameterCount);
     if (!id && error.isEmpty())
-        error = tr("发送 ID 须在十六进制 000～7FF 范围内。");
+        error = tr("发送 ID 须为十进制 0～2047 或 0x000～0x7FF。");
     m_send->setEnabled(m_connected && id && !payload.isEmpty());
     auto feedback = id ? tr("发送 ID %1").arg(formatStandardCanId(*id)) : tr("发送 ID --");
     if (parameterCount >= 0)
@@ -476,7 +478,7 @@ void CanCommandBar::submit()
 {
     if (!m_connected)
         return;
-    const auto id = parseStandardHexCanId(m_sendId->text());
+    const auto id = parseStandardCanId(m_sendId->text());
     if (!id)
         return;
     QString error;
@@ -488,8 +490,19 @@ void CanCommandBar::submit()
 void CanCommandBar::rememberQueuedSendId(quint32 id)
 {
     const auto text = m_sendId->text().trimmed();
-    QSettings().setValue(QStringLiteral("command/canSendId"),
-                         parseStandardHexCanId(text) == id ? text : formatStandardCanId(id).mid(2));
+    QSettings().setValue(QStringLiteral("command/canSendIdText"),
+                         parseStandardCanId(text) == id ? text : formatStandardCanId(id));
+}
+
+QString CanCommandBar::sendIdText() const
+{
+    return m_sendId->text();
+}
+
+void CanCommandBar::setConfiguredSendId(const QString &text)
+{
+    m_sendId->setText(text);
+    QSettings().setValue(QStringLiteral("command/canSendIdText"), text);
 }
 
 void CanCommandBar::openNumberConverter()

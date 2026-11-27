@@ -21,8 +21,6 @@ ViewData readSessionView(const QString &path, double lower, double upper,
     archive.lastX(result.archiveLastTime);
     // 每桶保留首尾及每一路的极值，长记录也不生成无限大的绘图容器。
     constexpr int buckets = 400;
-    // 首尾、各通道极值，以及每个绘图通道的首/末缺失点。
-    // 保留 NaN，避免缺失反馈经过抽稀后被错误地连接成连续曲线。
     constexpr int missingBase = 2 + 2 * sampleChannelCount;
     std::array<SamplePoint, missingBase + 2 * waveformChannelCount> candidates{};
     std::array<bool, waveformChannelCount> hasMissing{};
@@ -39,7 +37,8 @@ ViewData readSessionView(const QString &path, double lower, double upper,
                 result.points.append(p);
     };
     const double span = qMax(upper - lower, 1e-9);
-    double previousTime = -1;
+    std::array<double, waveformChannelCount> lastChannelTimes;
+    lastChannelTimes.fill(-1);
     const bool ok = archive.forEachSampleInRange(
         lower, upper,
         [&](double x, const double *values)
@@ -51,20 +50,18 @@ ViewData readSessionView(const QString &path, double lower, double upper,
             std::copy_n(values, archive.channelCount(), p.values.begin());
             // 只标记原始数据中的实际间断，避免把抽稀后的点间距误当成丢数据。
             // 宽视图中小于一桶的间断不单独展开，控制绘图内存上限。
-            if (previousTime >= 0 && x - previousTime > qMax(2.0, span / buckets))
+            if (p.markChannelGaps(lastChannelTimes, qMax(2.0, span / buckets)))
             {
                 finishBucket();
                 hasBucket = false;
-                p.breakBefore = true;
             }
-            previousTime = x;
             const int bucket = qBound(0, int((x - lower) / span * buckets), buckets - 1);
             if (!hasBucket || bucket != previousBucket)
             {
                 finishBucket();
                 candidates.fill(p);
                 for (int c = 0; c < waveformChannelCount; ++c)
-                    hasMissing[c] = !qIsFinite(p.values[c]);
+                    hasMissing[c] = p.hasPlotPoint(c) && !qIsFinite(p.values[c]);
                 hasBucket = true;
                 previousBucket = bucket;
             }
@@ -72,7 +69,7 @@ ViewData readSessionView(const QString &path, double lower, double upper,
             {
                 candidates[1] = p;
                 for (int c = 0; c < waveformChannelCount; ++c)
-                    if (!qIsFinite(p.values[c]))
+                    if (p.hasPlotPoint(c) && !qIsFinite(p.values[c]))
                     {
                         if (!hasMissing[c])
                             candidates[missingBase + c * 2] = p;

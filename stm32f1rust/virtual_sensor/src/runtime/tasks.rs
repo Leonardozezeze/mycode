@@ -5,3 +5,4 @@ pub mod heartbeat;
 pub mod uart_task;
 pub mod can_task;
 pub mod can_shell_task;
+pub mod can_telemetry_task;

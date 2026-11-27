@@ -1,11 +1,11 @@
-//! 应用层：初始化设备并启动调试串口、心跳、遥测和含杂率联动推杆任务。
+//! 应用层：初始化设备并启动调试串口、心跳、CAN 控制台和遥测任务。
 use crate::{
     comm::virsenser,
     drivers::{adc_seed, can::CanLink},
     runtime::{
         board::Devices,
         shell::commands::{bind_can1, bind_uart1},
-        tasks::{can_shell_task, can_task, heartbeat, uart_shell_task},
+        tasks::{can_shell_task, can_task, can_telemetry_task, heartbeat, uart_shell_task},
     },
 };
 use embassy_executor::Spawner;
@@ -37,6 +37,9 @@ pub async fn run(mut devices: Devices, spawner: Spawner) -> ! {
     spawner
         .spawn(can_shell_task::can_shell_task(can_link))
         .expect("can_shell_task init failed");
+    spawner
+        .spawn(can_telemetry_task::can_telemetry_task(can_link))
+        .expect("failed to spawn CAN telemetry task");
     // 主任务挂起，保留红灯句柄；panic 仍走独立的 PAC 接管路径。
     core::future::pending().await
 }

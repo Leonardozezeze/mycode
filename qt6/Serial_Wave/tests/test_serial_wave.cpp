@@ -22,6 +22,7 @@
 #include <QTabBar>
 #include <QDialog>
 #include <QDoubleSpinBox>
+#include <QSpinBox>
 #include <QDialogButtonBox>
 #include <QTimer>
 #include <QDir>
@@ -53,6 +54,7 @@
 #include "recordingpanel.h"
 #include "commandbar.h"
 #include "uartterminal.h"
+#include "shellcommanddialog.h"
 #include "logpanel.h"
 #include "qcustomplot.h"
 #include "apptheme.h"
@@ -73,6 +75,11 @@ QByteArray frame(float crushRatio = 0.1f, float impurityRatio = 0.02f, float rpm
         qToLittleEndian(bits, b.data() + 1 + i * 4);
     }
     return b;
+}
+QByteArray canQualityFrame(float crushRatio = 0.1f, float impurityRatio = 0.02f)
+{
+    const auto serial = frame(crushRatio, impurityRatio);
+    return serial.mid(5, 4) + serial.mid(1, 4);
 }
 QByteArray actuatorFrame(float position = 50, ActuatorState state = ActuatorState::Extending)
 {
@@ -131,7 +138,6 @@ private slots:
         settings.remove("command/presets");
         settings.setValue("console/receiveMode", 0);
         settings.remove("console/terminal");
-        settings.setValue("connection/transport", "serial");
         settings.setValue("serial/autoReconnect", false);
         settings.remove("wave");
     }
@@ -167,7 +173,7 @@ private slots:
         auto *send = commands.findChild<QPushButton *>("canSendButton");
         auto *feedback = commands.findChild<QLabel *>("canSendFeedback");
         QSignalSpy submitted(&commands, &CanCommandBar::commandSubmitted);
-        QCOMPARE(id->text(), QString("401"));
+        QCOMPARE(id->text(), QString("0x401"));
         parameters->setText("10 fF");
         QVERIFY(feedback->text().contains("参数 2/7 字节 · DLC 3"));
         number->setText("0x01");
@@ -203,7 +209,7 @@ private slots:
         QCOMPARE(submitted[0][1].toByteArray(), QByteArray::fromHex("01aa55"));
         QCOMPARE(parameters->text(), QString("AA 55"));
 
-        for (const auto &invalidId : {"", "800", "0x800", "6G1", "+651", "651, 652"})
+        for (const auto &invalidId : {"", "2048", "0x800", "7FF", "6G1", "+651", "651, 652"})
         {
             id->setText(invalidId);
             QVERIFY(!send->isEnabled());
@@ -220,7 +226,7 @@ private slots:
         QCOMPARE(submitted[1][0].toUInt(), quint32(0x651));
         QCOMPARE(submitted[1][1].toByteArray(), QByteArray::fromHex("ff00112233445566"));
 
-        id->setText("7FF");
+        id->setText("2047");
         number->setText("0");
         parameters->clear();
         QVERIFY(feedback->text().contains("参数 0/7 字节 · DLC 1"));
@@ -238,31 +244,37 @@ private slots:
     void canConsoleRemembersLastSendId()
     {
         QSettings settings;
-        settings.remove("command/canSendId");
-        const auto cleanup = qScopeGuard([&] { settings.remove("command/canSendId"); });
+        settings.remove("command/canSendIdText");
+        const auto cleanup = qScopeGuard([&] { settings.remove("command/canSendIdText"); });
         {
             CanCommandBar commands;
             commands.setConnected(true);
             auto *id = commands.findChild<QLineEdit *>("canSendId");
             auto *number = commands.findChild<QLineEdit *>("canCommandNumber");
             auto *parameters = commands.findChild<QLineEdit *>("canCommandParameters");
-            QCOMPARE(id->text(), QString("401"));
-            id->setText("7A1");
+            QCOMPARE(id->text(), QString("0x401"));
+            id->setText("1953");
             number->setText("0x02");
             parameters->setText("AA");
             QSignalSpy submitted(&commands, &CanCommandBar::commandSubmitted);
             commands.findChild<QPushButton *>("canSendButton")->click();
             QCOMPARE(submitted.count(), 1);
-            QVERIFY(!settings.contains("command/canSendId"));
+            QVERIFY(!settings.contains("command/canSendIdText"));
             commands.rememberQueuedSendId(submitted.at(0).at(0).toUInt());
         }
         CanCommandBar restored;
-        QCOMPARE(restored.findChild<QLineEdit *>("canSendId")->text(), QString("7A1"));
+        QCOMPARE(restored.findChild<QLineEdit *>("canSendId")->text(), QString("1953"));
+
+        settings.remove("command/canSendIdText");
+        settings.setValue("command/canSendId", "650");
+        const auto legacyCleanup = qScopeGuard([&] { settings.remove("command/canSendId"); });
+        CanCommandBar migrated;
+        QCOMPARE(migrated.findChild<QLineEdit *>("canSendId")->text(), QString("0x650"));
 
         // 配置里的非法值回退到默认 ID。
-        QSettings().setValue("command/canSendId", "800");
+        QSettings().setValue("command/canSendIdText", "2048");
         CanCommandBar fallback;
-        QCOMPARE(fallback.findChild<QLineEdit *>("canSendId")->text(), QString("401"));
+        QCOMPARE(fallback.findChild<QLineEdit *>("canSendId")->text(), QString("0x401"));
     }
     void canNumberConverterFormatsParameterBytes()
     {
@@ -316,7 +328,7 @@ private slots:
         });
         tool->click();
     }
-    void consoleCanReceiveIdsValidateHexLists()
+    void consoleCanReceiveIdsValidateMixedBaseLists()
     {
         QSettings settings;
         const QString legacyKey = QStringLiteral("console/can/id");
@@ -326,12 +338,12 @@ private slots:
         auto *ids = panel.findChild<QLineEdit *>("canId");
         auto *status = panel.findChild<QLabel *>("canReceiveIdStatus");
         auto *connectButton = panel.findChild<QPushButton *>("primaryButton");
-        QCOMPARE(ids->text(), QString("64")); // 原来的十进制 100 保持相同 ID。
+        QCOMPARE(ids->text(), QString("0x064")); // 原来的十进制 100 保持相同 ID。
 
-        ids->setText("000, 0x650 651，7fF, 007FF");
+        ids->setText("000, 0x650 651，0x7fF, 2047");
         QCOMPARE(status->text(), QString("筛选 4 个接收 ID"));
         QVERIFY(connectButton->isEnabled());
-        for (const auto &invalid : {"651, G52", "0x", "800", "0x800", "FFFFFFF", "+20", ","})
+        for (const auto &invalid : {"651, G52", "0x", "2048", "0x800", "7FF", "+20", ","})
         {
             ids->setText(invalid);
             QVERIFY(!connectButton->isEnabled());
@@ -340,31 +352,33 @@ private slots:
         QCOMPARE(status->text(), QString("接收所有标准数据帧"));
         QVERIFY(connectButton->isEnabled());
 
+        settings.setValue("console/can/receiveIds", "651, 7FF");
+        const auto listCleanup = qScopeGuard([&] { settings.remove("console/can/receiveIds"); });
+        CanPanel migrated(nullptr, CanPanel::Role::Console);
+        QCOMPARE(migrated.findChild<QLineEdit *>("canId")->text(), QString("0x651, 0x7FF"));
+
 #ifdef Q_OS_LINUX
         QStringList many;
         for (int i = 0; i < 512; ++i)
-            many << QString::number(i, 16);
+            many << QString::number(i);
         ids->setText(many.join(' '));
         QCOMPARE(status->text(), QString("筛选 512 个接收 ID"));
         QVERIFY(connectButton->isEnabled());
-        many << QStringLiteral("200");
+        many << QStringLiteral("512");
         ids->setText(many.join(' '));
         QVERIFY(!connectButton->isEnabled());
 #endif
     }
     void canReceptionReachesPlotStatusAndArchive()
     {
-        QSettings().remove("connection/transport");
         MainWindow window;
-        auto *selector = window.findChild<QComboBox *>("transportSelector");
+        QVERIFY(!window.findChild<QComboBox *>("transportSelector"));
+        QVERIFY(!window.findChild<SerialPanel *>("sensorUartPanel"));
         auto *can = window.findChild<CanPanel *>("sensorCanPanel");
         auto *consoleCan = window.findChild<CanPanel *>("consoleCanPanel");
         auto *wave = window.findChild<WavePanel *>();
         auto *status = window.findChild<StatusPanel *>();
-        const int canIndex = selector->findData(QString("can"));
-        QVERIFY(canIndex >= 0);
         QVERIFY(consoleCan);
-        selector->setCurrentIndex(canIndex);
         auto *interface = can->findChild<QLineEdit *>("canInterface");
 #ifdef Q_OS_LINUX
         QCOMPARE(interface->text(), QString("can0"));
@@ -374,7 +388,7 @@ private slots:
 #else
         QCOMPARE(interface->text(), QString("usb0"));
 #endif
-        QCOMPARE(can->findChild<QLineEdit *>("canId")->text(), QString("0x123"));
+        QCOMPARE(can->findChild<QLineEdit *>("canId")->text(), QString("0x100"));
         auto *canCommands = window.findChild<CanCommandBar *>();
         auto *send = canCommands->findChild<QPushButton *>("canSendButton");
         canCommands->findChild<QLineEdit *>("canCommandNumber")->setText("0x01");
@@ -394,9 +408,10 @@ private slots:
         auto *lastReceive = can->findChild<QLabel *>("canLastReceive");
         QCOMPARE(traffic->text(), QString("0 帧 · 0 B"));
         QCOMPARE(lastReceive->text(), QString("--"));
-        QVERIFY(!selector->isEnabled());
         QVERIFY(wave->isRecording());
-        can->frameReceived(0x123, QByteArray::fromHex("0000003e0000803e"));
+        can->frameReceived(0x7FE, QByteArray::fromHex("0000003e0000803e"));
+        QCOMPARE(wave->sampleCount(), 0);
+        can->frameReceived(0x100, QByteArray::fromHex("0000003e0000803e"));
         QCOMPARE(wave->sampleCount(), 1);
         auto *quality = wave->findChild<QCustomPlot *>("qualityPlot");
         QCOMPARE(quality->graph(0)->data()->constBegin()->value, 25.0);
@@ -405,31 +420,42 @@ private slots:
         QVERIFY(hasText(status, QString("12.5 %")));
         QVERIFY(hasText(status, QString("暂无电机数据")));
         QCOMPARE(status->findChild<QLabel *>("actuatorStateValue")->text(), QString("暂无数据"));
-        QTRY_COMPARE(traffic->text(), QString("1 帧 · 8 B"));
+        QTRY_COMPARE(traffic->text(), QString("2 帧 · 16 B")); // 注入信号绕过设备接收过滤。
         QVERIFY(QTime::fromString(lastReceive->text(), "HH:mm:ss.zzz").isValid());
+        can->frameReceived(0x101, QByteArray::fromHex("00000c4300001643"));
+        can->frameReceived(0x100, QByteArray::fromHex("0000803e0000003e"));
+        can->frameReceived(0x102, QByteArray::fromHex("00002a4202"));
+        QCOMPARE(wave->sampleCount(), 4);
+        QVERIFY(hasText(status, QString("140 rpm")));
+        QVERIFY(hasText(status, QString("150 rpm")));
+        QVERIFY(hasText(status, QString("18.8 %")));
+        QCOMPARE(status->findChild<QLabel *>("actuatorPositionValue")->text(), QString("42.5 %"));
+        QCOMPARE(quality->graph(0)->dataCount(), 2);
+        auto *speedPlot = wave->findChild<QCustomPlot *>("speedPlot");
+        QCOMPARE(speedPlot->graph(0)->dataCount(), 1);
+        QCOMPARE(speedPlot->graph(0)->data()->constBegin()->value, 140.0);
 
         // 注入的是连接信号，底层套接字还没打开。失败时日志说明原因，不能记为已排队。
-        const auto previousSendId = QSettings().value("command/canSendId");
-        canCommands->findChild<QLineEdit *>("canSendId")->setText("7A1");
+        const auto previousSendId = QSettings().value("command/canSendIdText");
+        canCommands->findChild<QLineEdit *>("canSendId")->setText("0x7A1");
         auto *canData = canCommands->findChild<QLineEdit *>("canCommandParameters");
         canData->setText("00 01");
         canCommands->findChild<QPushButton *>("canSendButton")->click();
         QCOMPARE(canData->text(), QString("00 01"));
         QTRY_VERIFY(log->toPlainText().contains("CAN 0x7A1 发送失败"));
-        QCOMPARE(QSettings().value("command/canSendId"), previousSendId);
+        QCOMPARE(QSettings().value("command/canSendIdText"), previousSendId);
         const auto beforeDisconnect = wave->sessionEvents();
         QVERIFY(std::none_of(beforeDisconnect.begin(), beforeDisconnect.end(), [](const auto &event)
         { return event.type == "command"; }));
 
         can->connectionChanged(false);
-        QVERIFY(selector->isEnabled());
         QVERIFY(!wave->isRecording());
         const auto events = wave->sessionEvents();
         QVERIFY(std::any_of(events.begin(), events.end(), [](const auto &event)
         { return event.type == "disconnect" && event.message.contains("CAN"); }));
         SampleArchive archive;
         QVERIFY(archive.open(wave->bufferFileName()));
-        QCOMPARE(archive.count(), 1);
+        QCOMPARE(archive.count(), 4);
         QVector<double> values;
         double time = 0;
         QVERIFY(archive.nearestSample(0, time, values));
@@ -438,17 +464,77 @@ private slots:
         QCOMPARE(values[1], 12.5);
         QVERIFY(std::all_of(values.begin() + 2, values.end(),
                             [](double value) { return qIsNaN(value); }));
+        QVector<double> recordedSpeeds;
+        QVERIFY(archive.forEachSample([&](double, const double *row)
+        {
+            if (qIsFinite(row[2]))
+                recordedSpeeds.append(row[2]);
+            return true;
+        }));
+        QCOMPARE(recordedSpeeds, QVector<double>({140.0}));
         can->connectionChanged(true);
         QCOMPARE(traffic->text(), QString("0 帧 · 0 B"));
         QCOMPARE(lastReceive->text(), QString("--"));
         can->connectionChanged(false);
-        selector->setCurrentIndex(selector->findData(QString("serial")));
         QVERIFY(send->isEnabled());
         can->connectionChanged(true);
         consoleCan->connectionChanged(false);
         QVERIFY(!send->isEnabled());
         QVERIFY(wave->isRecording());
         can->connectionChanged(false);
+    }
+    void canIdDialogValidatesAndPersistsMappings()
+    {
+        QSettings settings;
+        const QStringList keys{"can/id", "can/speedId", "can/actuatorId",
+                               "console/can/receiveIdText", "command/canSendIdText"};
+        const auto cleanup = qScopeGuard([&]
+        {
+            for (const auto &key : keys)
+                settings.remove(key);
+        });
+        MainWindow window;
+        auto *action = window.findChild<QAction *>("configureCanIdsAction");
+        QVERIFY(action);
+        QTimer::singleShot(0, &window, [&]
+        {
+            auto *dialog = window.findChild<QDialog *>("canIdConfigurationDialog");
+            QVERIFY(dialog);
+            const auto close = qScopeGuard([&]
+            {
+                if (dialog->isVisible())
+                    dialog->reject();
+            });
+            auto *quality = dialog->findChild<QLineEdit *>("canQualityId");
+            auto *speed = dialog->findChild<QLineEdit *>("canSpeedId");
+            auto *actuator = dialog->findChild<QLineEdit *>("canActuatorId");
+            auto *tx = dialog->findChild<QLineEdit *>("canShellTxId");
+            auto *rx = dialog->findChild<QLineEdit *>("canShellRxIds");
+            auto *box = dialog->findChild<QDialogButtonBox *>();
+            QCOMPARE(quality->text(), QString("0x100"));
+            QCOMPARE(speed->text(), QString("0x101"));
+            QCOMPARE(actuator->text(), QString("0x102"));
+            QCOMPARE(tx->text(), QString("0x401"));
+            QCOMPARE(rx->text(), QString("0x402"));
+            quality->setText("257");
+            box->button(QDialogButtonBox::Save)->click();
+            QVERIFY(dialog->isVisible());
+            quality->setText("300");
+            speed->setText("0x12D");
+            actuator->setText("0x12E");
+            tx->setText("0x650");
+            rx->setText("0x651, 1620");
+            box->button(QDialogButtonBox::Save)->click();
+            QVERIFY(!dialog->isVisible());
+        });
+        action->trigger();
+        auto *sensor = window.findChild<CanPanel *>("sensorCanPanel");
+        QCOMPARE(sensor->sensorFrameIndex(300).value_or(-1), 0);
+        QCOMPARE(sensor->sensorFrameIndex(301).value_or(-1), 1);
+        CanPanel restored;
+        QCOMPARE(restored.sensorFrameIndex(302).value_or(-1), 2);
+        QCOMPARE(settings.value("console/can/receiveIdText").toString(), QString("0x651, 1620"));
+        QCOMPARE(settings.value("command/canSendIdText").toString(), QString("0x650"));
     }
     void parserRatioValuesBecomePercentages()
     {
@@ -697,12 +783,21 @@ private slots:
         status.rpmTarget = 1500;
         panel.updateStatus(status);
         QVERIFY(hasText(&panel, QString::fromUtf8("运行中")));
+        QVERIFY(hasText(&panel, QString("1450 rpm")));
+        QVERIFY(hasText(&panel, QString("1500 rpm")));
+        QVERIFY(hasText(&panel, QString("-50 rpm")));
         QTest::qWait(2100);
         panel.refreshFreshness();
         QVERIFY(hasText(&panel, QString::fromUtf8("数据过期")));
+        QVERIFY(!hasText(&panel, QString("1450 rpm")));
+        QVERIFY(!hasText(&panel, QString("1500 rpm")));
+        QVERIFY(!hasText(&panel, QString("-50 rpm")));
+        panel.updateStatus(status);
+        QVERIFY(hasText(&panel, QString("1450 rpm")));
         panel.setConnected(false);
         QVERIFY(hasText(&panel, QString::fromUtf8("未连接")));
         QVERIFY(!hasText(&panel, QString::fromUtf8("运行中")));
+        QVERIFY(!hasText(&panel, QString("1450 rpm")));
         panel.setConnected(true);
         QVERIFY(hasText(&panel, QString::fromUtf8("等待数据")));
     }
@@ -793,35 +888,43 @@ private slots:
     {
         MainWindow w;
         w.show();
-        auto *serial = w.findChild<SerialPanel *>("sensorUartPanel");
+        auto *sensor = w.findChild<CanPanel *>("sensorCanPanel");
         auto *wave = w.findChild<WavePanel *>();
         auto *rec = w.findChild<RecordingPanel *>();
-        serial->connectionChanged(true);
+        sensor->connectionChanged(true);
         QVERIFY(wave->isRecording());
         for (int i = 0; i < 20; ++i)
         {
-            serial->dataReceived(frame());
+            sensor->frameReceived(0x100, canQualityFrame());
             QTest::qWait(2);
         }
         const auto path = wave->bufferFileName();
         QCOMPARE(wave->sampleCount(), 20);
         QVERIFY(wave->flushRecording());
         QVERIFY(QMetaObject::invokeMethod(wave, "togglePause", Q_ARG(bool, true)));
-        serial->dataReceived(frame());
+        sensor->frameReceived(0x100, canQualityFrame());
         QCOMPARE(wave->sampleCount(), 21);
-        QVERIFY(wave->stopRecording());
-        serial->dataReceived(frame());
+        QVERIFY(QMetaObject::invokeMethod(wave, "togglePause", Q_ARG(bool, false)));
+        auto *quality = wave->findChild<QCustomPlot *>("qualityPlot");
+        const auto plottedBeforeStop = quality->graph(0)->dataCount();
+        QCOMPARE(plottedBeforeStop, 21);
+        auto *recordButton = rec->findChild<QPushButton *>("primaryButton");
+        QVERIFY(recordButton);
+        recordButton->click();
+        QVERIFY(!wave->isRecording());
+        sensor->frameReceived(0x100, canQualityFrame());
         QCOMPARE(wave->sampleCount(), 21);
+        QCOMPARE(quality->graph(0)->dataCount(), plottedBeforeStop);
         wave->clearData();
         QCOMPARE(wave->sampleCount(), 0);
-        serial->dataReceived(frame(0.4f));
+        sensor->frameReceived(0x100, canQualityFrame(0.4f));
         QCOMPARE(wave->sampleCount(), 1);
         QVERIFY(wave->lastTime() < .05);
         QMetaObject::invokeMethod(rec, "refreshStats");
         for (auto *l : rec->findChildren<QLabel *>())
             if (l->text().contains(QString::fromUtf8("点/秒")))
                 QVERIFY(!l->text().startsWith('-'));
-        serial->connectionChanged(false);
+        sensor->connectionChanged(false);
         QVERIFY(!wave->isRecording());
         QVERIFY(wave->openSession(path));
         QVERIFY(wave->isPlayback());
@@ -841,6 +944,57 @@ private slots:
         SampleArchive persisted;
         QVERIFY(persisted.open(path));
         QCOMPARE(persisted.count(), 21);
+    }
+    void canShellCommandListUsesPagedUtf8Replies()
+    {
+        ShellCommandDialog dialog;
+        dialog.setConnected(ShellCommandDialog::Transport::Can, true);
+        QSignalSpy requests(&dialog, &ShellCommandDialog::canPageRequested);
+        QSignalSpy uartRequests(&dialog, &ShellCommandDialog::queryRequested);
+        dialog.queryPreferred(ShellCommandDialog::Transport::Uart);
+        QCOMPARE(uartRequests.count(), 0);
+        QCOMPARE(requests.count(), 1);
+        QCOMPARE(requests[0][0].toByteArray(), QByteArray::fromHex("050000"));
+
+        QByteArray report("shell-info begin\r\n"
+                          "command name=ping opcode=0x01 help=检查设备是否在线\r\n"
+                          "command name=speed opcode=none help=设置目标转速\r\n"
+                          "shell-info end\r\n");
+        report.append(QByteArray((4 - report.size() % 4) % 4, '\n'));
+        const auto reply = [](quint16 page, const QByteArray &bytes)
+        {
+            auto response = QByteArray::fromHex("05000000");
+            qToLittleEndian(page, response.data() + 2);
+            return response + bytes;
+        };
+        auto *table = dialog.findChild<QTableWidget *>("shellCommandTable");
+        const int pages = int(report.size() / 4);
+        for (int page = 0; page < pages; ++page)
+        {
+            QCOMPARE(requests.count(), page + 1);
+            const auto request = requests[page][0].toByteArray();
+            QCOMPARE(request[0], '\x05');
+            QCOMPARE(qFromLittleEndian<quint16>(request.constData() + 1), quint16(page));
+            const auto response = reply(quint16(page), report.mid(4 * page, 4));
+            if (page == 1)
+            {
+                dialog.receiveCan(0x403, response);
+                dialog.receiveCan(0x402, reply(0, report.left(4)));
+                QCOMPARE(requests.count(), 2);
+            }
+            dialog.receiveCan(0x402, response);
+        }
+        QCOMPARE(table->rowCount(), 0);
+        QCOMPARE(requests.count(), pages + 1);
+        dialog.receiveCan(0x402, reply(quint16(pages), {}));
+        QCOMPARE(table->rowCount(), 2);
+        QCOMPARE(table->item(0, 2)->text(), QString("检查设备是否在线"));
+        QCOMPARE(table->item(1, 1)->text(), QString("仅 UART"));
+
+        dialog.query();
+        dialog.receiveCan(0x402, QByteArray::fromHex("0501"));
+        QVERIFY(dialog.findChild<QLabel *>("shellCommandStatus")->text().contains("0x01"));
+        QCOMPARE(table->rowCount(), 0);
     }
     void closeFlushesPendingAndCommandFailureKeepsText()
     {
@@ -871,12 +1025,6 @@ private slots:
     void pseudoTerminalRoundTrip()
     {
 #ifdef Q_OS_LINUX
-        const int master = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
-        QVERIFY(master >= 0);
-        auto cleanup = qScopeGuard([&] { ::close(master); });
-        QCOMPARE(grantpt(master), 0);
-        QCOMPARE(unlockpt(master), 0);
-        const auto name = QString::fromLocal8Bit(ptsname(master));
         const int consoleMaster = posix_openpt(O_RDWR | O_NOCTTY | O_NONBLOCK);
         QVERIFY(consoleMaster >= 0);
         auto cleanupConsole = qScopeGuard([&] { ::close(consoleMaster); });
@@ -884,12 +1032,8 @@ private slots:
         QCOMPARE(unlockpt(consoleMaster), 0);
         const auto consoleName = QString::fromLocal8Bit(ptsname(consoleMaster));
         MainWindow w;
-        auto *serial = w.findChild<SerialPanel *>("sensorUartPanel");
-        auto *ports = serial->findChild<QComboBox *>("serialPortCombo");
-        ports->addItem(name, name);
-        ports->setCurrentIndex(ports->count() - 1);
-        QVERIFY(QMetaObject::invokeMethod(serial, "onOpenClicked"));
-        QVERIFY(serial->isOpen());
+        auto *sensor = w.findChild<CanPanel *>("sensorCanPanel");
+        sensor->connectionChanged(true);
         auto *wave = w.findChild<WavePanel *>();
         QVERIFY(wave->isRecording());
         auto *console = w.findChild<SerialPanel *>("consoleUartPanel");
@@ -898,18 +1042,12 @@ private slots:
         consolePorts->setCurrentIndex(consolePorts->count() - 1);
         QVERIFY(QMetaObject::invokeMethod(console, "onOpenClicked"));
         QVERIFY(console->isOpen());
-        const auto packet = frame();
-        QCOMPARE(::write(master, packet.constData(), 7), 7);
-        QTest::qWait(5);
-        QCOMPARE(wave->sampleCount(), 0);
-        QCOMPARE(::write(master, packet.constData() + 7, 11), 11);
-        const auto batch = packet + packet;
         const QByteArray statusText("device ready\n");
         QCOMPARE(::write(consoleMaster, statusText.constData(), statusText.size()), statusText.size());
-        QCOMPARE(::write(master, batch.constData(), batch.size()), batch.size());
-        QTRY_COMPARE(wave->sampleCount(), 3);
-        QCOMPARE(serial->receivedBytes(), quint64(packet.size() + batch.size()));
-        QTRY_VERIFY(!serial->findChild<QLabel *>("serialLastReceive")->text().contains("--"));
+        sensor->frameReceived(0x100, canQualityFrame());
+        sensor->frameReceived(0x101, frame().mid(9, 8));
+        sensor->frameReceived(0x100, canQualityFrame());
+        QCOMPARE(wave->sampleCount(), 3);
         QTRY_VERIFY(hasText(w.findChild<StatusPanel *>(), QString::fromUtf8("运行中")));
         QTRY_VERIFY(
             w.findChild<LogPanel *>()->findChild<QPlainTextEdit *>()->toPlainText().contains(
@@ -959,7 +1097,7 @@ private slots:
         auto *logPanel = w.findChild<LogPanel *>();
         w.show();
         w.findChild<QDockWidget *>("consoleDock")->show();
-        QCOMPARE(tabs->count(), 3);
+        QCOMPARE(tabs->count(), 4);
         QCOMPARE(tabs->tabText(1), QString("UART 终端"));
         QCOMPARE(tabs->tabText(2), QString("CAN"));
         tabs->setCurrentIndex(0);
@@ -1004,11 +1142,125 @@ private slots:
         QVERIFY(logPanel->findChild<QLineEdit *>("logSearch")->hasFocus());
         tabs->setCurrentIndex(2);
         QVERIFY(w.findChild<CanCommandBar *>()->isVisible());
+        QTRY_VERIFY(logPanel->y() < commandPage->height() / 2);
+        const auto compactScreenshot = qEnvironmentVariable("SERIAL_WAVE_COMPACT_CONSOLE_SCREENSHOT");
+        if (!compactScreenshot.isEmpty())
+            QVERIFY(commandPage->grab().save(compactScreenshot));
 
-        QVERIFY(QMetaObject::invokeMethod(serial, "onOpenClicked"));
-        QVERIFY(!serial->isOpen());
+        auto *getCommands = w.findChild<QPushButton *>("getShellCommands");
+        getCommands->click();
+        auto *shellDialog = w.findChild<QDialog *>("shellCommandDialog");
+        QVERIFY(shellDialog->isVisible());
+        const QByteArray query("shell-info\r");
+        QTRY_VERIFY_WITH_TIMEOUT(([&]
+        {
+            char bytes[64];
+            const auto count = ::read(consoleMaster, bytes, sizeof(bytes));
+            if (count > 0)
+                received.append(bytes, count);
+            return received.endsWith(query);
+        }()), 2000);
+        auto *table = shellDialog->findChild<QTableWidget *>("shellCommandTable");
+        logPanel->findChild<QComboBox *>("receiveLogMode")->setCurrentIndex(2);
+        QSignalSpy replyChunks(console, &SerialPanel::dataReceived);
+        const QByteArray firstReply("> shell-info\r\nshell-info begin\r\n"
+                                    "can_request_id=0x401 can_reply_id=0x402\r\n"
+                                    "command name=ping opcode=0x01 help=检查设备是否在线\r\n"
+                                    "command name=speed opcode=none help=");
+        const auto help = QString("设置目标转速").toUtf8();
+        const auto fragment = firstReply + help.left(1);
+        QCOMPARE(::write(consoleMaster, fragment.constData(), fragment.size()), fragment.size());
+        QTRY_VERIFY(!replyChunks.isEmpty());
+        QCOMPARE(table->rowCount(), 0);
+        const auto remainder = help.mid(1) + "\r\nshell-info end\r\n> ";
+        QCOMPARE(::write(consoleMaster, remainder.constData(), remainder.size()), remainder.size());
+        QTRY_COMPARE(table->rowCount(), 2);
+        QCOMPARE(table->item(0, 0)->text(), QString("ping"));
+        QCOMPARE(table->item(0, 1)->text(), QString("0x01"));
+        QCOMPARE(table->item(1, 0)->text(), QString("speed"));
+        QCOMPARE(table->item(1, 1)->text(), QString("仅 UART"));
+        QCOMPARE(table->item(1, 2)->text(), QString("设置目标转速"));
+        const auto tableScreenshot = qEnvironmentVariable("SERIAL_WAVE_COMMAND_TABLE_SCREENSHOT");
+        if (!tableScreenshot.isEmpty())
+            QVERIFY(shellDialog->grab().save(tableScreenshot));
+        shellDialog->close();
+
+        QCOMPARE(tabs->tabText(3), QString("快速设置"));
+        tabs->setCurrentIndex(3);
+        auto *quick = w.findChild<QWidget *>("quickSettingsPage");
+        QVERIFY(quick->isVisible());
+        QVERIFY(!logPanel->isVisible());
+        int pendingCount = 0;
+        for (auto *button : quick->findChildren<QPushButton *>())
+        {
+            if (!button->property("pendingParameter").toBool())
+                continue;
+            QVERIFY(!button->isEnabled());
+            ++pendingCount;
+        }
+        QCOMPARE(pendingCount, 13);
+        const auto screenshot = qEnvironmentVariable("SERIAL_WAVE_QUICK_SETTINGS_SCREENSHOT");
+        if (!screenshot.isEmpty())
+            QVERIFY(quick->grab().save(screenshot));
+        auto *logToggle = quick->findChild<QPushButton *>("quickLogToggle");
+        logToggle->click();
+        QVERIFY(logPanel->isVisible());
+        const auto logScreenshot = qEnvironmentVariable("SERIAL_WAVE_LOG_SCREENSHOT");
+        if (!logScreenshot.isEmpty())
+            QVERIFY(commandPage->grab().save(logScreenshot));
+        logToggle->click();
+        QVERIFY(!logPanel->isVisible());
+        tabs->setCurrentIndex(2);
+        QVERIFY(logPanel->isVisible());
+        tabs->setCurrentIndex(3);
+        QVERIFY(!logPanel->isVisible());
+        w.findChild<QAction *>("searchLogAction")->trigger();
+        QVERIFY(logPanel->isVisible());
+        logToggle->click();
+        auto *target = quick->findChild<QDoubleSpinBox *>("quickTargetRpm");
+        auto *setSpeed = quick->findChild<QPushButton *>("quickSetSpeed");
+        auto *readSpeed = quick->findChild<QPushButton *>("quickReadSpeed");
+        auto *pwm = quick->findChild<QSpinBox *>("quickManualPwm");
+        auto *setPwm = quick->findChild<QPushButton *>("quickSetPwm");
+        auto *pid = quick->findChild<QComboBox *>("quickPidMode");
+        auto *setPid = quick->findChild<QPushButton *>("quickSetPid");
+        auto *readPid = quick->findChild<QPushButton *>("quickReadPid");
+        QCOMPARE(target->minimum(), -250.0);
+        QCOMPARE(target->maximum(), 250.0);
+        target->setValue(-123.25);
+        QVERIFY(setSpeed->isEnabled());
+        QVERIFY(readSpeed->isEnabled());
+        setSpeed->click();
+        readSpeed->click();
+        QCOMPARE(pwm->minimum(), -1000);
+        QCOMPARE(pwm->maximum(), 1000);
+        pwm->setValue(-321);
+        setPwm->click();
+        pid->setCurrentIndex(1);
+        setPid->click();
+        pid->setCurrentIndex(0);
+        setPid->click();
+        readPid->click();
+        const QByteArray quickCommands("speed -123.25\r" "speed\r" "pwm -321\r" "pid on\r" "pid off\r" "pid\r");
+        QTRY_VERIFY_WITH_TIMEOUT(([&]
+        {
+            char bytes[128];
+            const auto count = ::read(consoleMaster, bytes, sizeof(bytes));
+            if (count > 0)
+                received.append(bytes, count);
+            return received.endsWith(quickCommands);
+        }()), 2000);
+        QVERIFY(wave->sessionEvents().constLast().message.contains("[UART] pid"));
+
+        sensor->connectionChanged(false);
         QVERIFY(!wave->isRecording());
         QVERIFY(console->isOpen());
+        QVERIFY(QMetaObject::invokeMethod(console, "onOpenClicked"));
+        QVERIFY(!setSpeed->isEnabled());
+        QVERIFY(!readSpeed->isEnabled());
+        QVERIFY(!setPwm->isEnabled());
+        QVERIFY(!setPid->isEnabled());
+        QVERIFY(!readPid->isEnabled());
         const auto path = wave->bufferFileName();
         w.close();
         SampleArchive archive;
@@ -1045,9 +1297,17 @@ private slots:
         QCOMPARE(submitted.count(), 2);
         QCOMPARE(submitted[0][0].toByteArray(), QByteArray("\x1bOA"));
         QCOMPARE(submitted[1][0].toByteArray(), QByteArray("\x1b[A"));
+        QTest::keyClick(view, Qt::Key_Left);
+        QTest::keyClick(view, Qt::Key_Right);
+        QCOMPARE(submitted[2][0].toByteArray(), QByteArray("\x1b[D"));
+        QCOMPARE(submitted[3][0].toByteArray(), QByteArray("\x1b[C"));
+        terminal.receive("\r\x1b[K> ab\x1b" "7");
+        terminal.receive("c\x1b" "8");
+        terminal.receive("\bZ");
+        QCOMPARE(view->toPlainText(), QString("> aZc"));
         terminal.setConnected(false);
         QTest::keyClick(view, Qt::Key_C, Qt::ControlModifier);
-        QCOMPARE(submitted.count(), 2);
+        QCOMPARE(submitted.count(), 4);
         QVERIFY(view->toPlainText().startsWith("> "));
         terminal.setConnected(true);
         QVERIFY(view->toPlainText().isEmpty());
@@ -1244,8 +1504,8 @@ private slots:
     void rawHexLoggingDoesNotLimitAcquisition()
     {
         MainWindow w;
-        auto *serial = w.findChild<SerialPanel *>("sensorUartPanel");
-        serial->connectionChanged(true);
+        auto *sensor = w.findChild<CanPanel *>("sensorCanPanel");
+        sensor->connectionChanged(true);
         auto *console = w.findChild<SerialPanel *>("consoleUartPanel");
         auto *wave = w.findChild<WavePanel *>();
         auto *log = w.findChild<LogPanel *>();
@@ -1255,7 +1515,8 @@ private slots:
         QByteArray batch;
         for (int i = 0; i < 1000; ++i)
             batch += frame();
-        serial->dataReceived(batch);
+        for (int i = 0; i < 1000; ++i)
+            sensor->frameReceived(0x100, canQualityFrame());
         console->dataReceived(batch);
         QCOMPARE(wave->sampleCount(), 1000);
         QTRY_VERIFY(view->toPlainText().contains("FF CD CC CC 3D"));
@@ -1263,7 +1524,7 @@ private slots:
         mode->setCurrentIndex(2);
         QTest::qWait(100);
         const auto before = view->toPlainText();
-        serial->dataReceived(frame());
+        sensor->frameReceived(0x100, canQualityFrame());
         console->dataReceived(frame());
         QCOMPARE(wave->sampleCount(), 1001);
         QTest::qWait(180);
@@ -1597,17 +1858,17 @@ private slots:
     void sessionEventsFollowOperationsAndReplay()
     {
         MainWindow window;
-        auto *serial = window.findChild<SerialPanel *>("sensorUartPanel");
+        auto *sensor = window.findChild<CanPanel *>("sensorCanPanel");
         auto *wave = window.findChild<WavePanel *>();
-        serial->connectionChanged(true);
-        serial->dataReceived(frame());
+        sensor->connectionChanged(true);
+        sensor->frameReceived(0x100, canQualityFrame());
         QTest::qWait(10);
         QVERIFY(wave->addSessionEvent("note", "第一次实验"));
         const auto noteTime = wave->sessionEvents().back().time;
-        serial->dataReceived(frame());
+        sensor->frameReceived(0x100, canQualityFrame());
         QVERIFY(wave->lastTime() >= noteTime); // 事件与解析器使用同一个单调时钟起点
         QVERIFY(wave->lastTime() - noteTime < .05);
-        serial->connectionChanged(false);
+        sensor->connectionChanged(false);
         QCOMPARE(wave->sessionEvents().size(), 5);
         const auto original = wave->bufferFileName();
         const auto copy = m_dir.filePath("gui-events-copy.swave");
@@ -1779,26 +2040,26 @@ private slots:
         QVERIFY(archive.open(panel.bufferFileName()));
         QCOMPARE(archive.channelCount(), sampleChannelCount); // 回看旧文件后新记录仍用新格式
     }
-    void extendedSerialReceptionReachesPlotStatusAndArchive()
+    void canActuatorReceptionKeepsLatestFeedbackAcrossQualityFrames()
     {
         MainWindow window;
-        auto *serial = window.findChild<SerialPanel *>("sensorUartPanel");
+        auto *sensor = window.findChild<CanPanel *>("sensorCanPanel");
         auto *wave = window.findChild<WavePanel *>();
         auto *status = window.findChild<StatusPanel *>();
-        serial->connectionChanged(true);
-        const auto packet = actuatorFrame(62.5, ActuatorState::Retracting);
-        serial->dataReceived(packet.left(6));
+        sensor->connectionChanged(true);
+        const auto payload = actuatorFrame(62.5, ActuatorState::Retracting).mid(17, 5);
+        sensor->frameReceived(0x102, payload.left(4));
         QCOMPARE(wave->sampleCount(), 0);
-        serial->dataReceived(packet.mid(6));
+        sensor->frameReceived(0x102, payload);
         QCOMPARE(wave->sampleCount(), 1);
         QCOMPARE(status->findChild<QLabel *>("actuatorPositionValue")->text(), QString("62.5 %"));
         QCOMPARE(status->findChild<QLabel *>("actuatorStateValue")->text(), QString::fromUtf8("缩回中"));
         auto *plot = wave->findChild<QCustomPlot *>("actuatorPlot");
         QCOMPARE(plot->graph(0)->data()->constBegin()->value, 62.5);
-        serial->dataReceived(frame());
+        sensor->frameReceived(0x100, canQualityFrame());
         QCOMPARE(wave->sampleCount(), 2);
-        QCOMPARE(status->findChild<QLabel *>("actuatorStateValue")->text(), QString::fromUtf8("暂无数据"));
-        QVERIFY(qIsNaN((plot->graph(0)->data()->constEnd() - 1)->value));
+        QCOMPARE(status->findChild<QLabel *>("actuatorStateValue")->text(), QString::fromUtf8("缩回中"));
+        QCOMPARE(plot->graph(0)->dataCount(), 1);
         QVERIFY(wave->stopRecording());
         SampleArchive archive;
         QVERIFY(archive.open(wave->bufferFileName()));
@@ -2288,8 +2549,8 @@ private slots:
         w.show();
         w.resize(1700, 1300);
         w.resetLayout();
-        auto *serial = w.findChild<SerialPanel *>("sensorUartPanel");
-        serial->connectionChanged(true);
+        auto *sensor = w.findChild<CanPanel *>("sensorCanPanel");
+        sensor->connectionChanged(true);
         auto *wave = w.findChild<WavePanel *>();
         for (int i = 0; i < 400; ++i)
             wave->addData(i * .05, {10 + 2 * std::sin(i * .1), 2 + .5 * std::cos(i * .08),
@@ -2316,6 +2577,19 @@ private slots:
         QCOMPARE(wave->findChild<QCustomPlot *>("speedPlot")->graph(1)->data()->constBegin()->value,
                  1500.);
         QCOMPARE(plots[0]->xAxis->range().upper, plots[1]->xAxis->range().upper);
+        auto *speed = wave->findChild<QCustomPlot *>("speedPlot");
+        auto *target = speed->graph(1);
+        auto *legendItem = speed->legend->itemWithPlottable(target);
+        QVERIFY(legendItem);
+        speed->replot();
+        QVERIFY(speed->rect().contains(legendItem->outerRect().center()));
+        const auto recorded = wave->sampleCount();
+        const bool targetVisible = target->visible();
+        QTest::mouseClick(speed, Qt::LeftButton, Qt::NoModifier, legendItem->outerRect().center());
+        QCOMPARE(target->visible(), !targetVisible);
+        QTest::mouseClick(speed, Qt::LeftButton, Qt::NoModifier, legendItem->outerRect().center());
+        QCOMPARE(target->visible(), targetVisible);
+        QCOMPARE(wave->sampleCount(), recorded);
         const auto output = qEnvironmentVariable("SERIAL_WAVE_SCREENSHOT");
         if (!output.isEmpty())
             QVERIFY(w.grab().save(output));

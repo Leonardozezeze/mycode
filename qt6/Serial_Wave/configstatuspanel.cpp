@@ -6,8 +6,6 @@
 #include <QFrame>
 #include <QLabel>
 #include <QBoxLayout>
-#include <QSettings>
-#include <QStackedWidget>
 #include <QTabWidget>
 
 ConfigStatusPanel::ConfigStatusPanel(QWidget *parent)
@@ -71,50 +69,10 @@ QWidget* ConfigStatusPanel::createSensorConfig()
     auto *configInner = new QVBoxLayout(configWidget);
     configInner->setContentsMargins(4, 4, 4, 0);
     configInner->setSpacing(3);
-    auto *selector = new QComboBox(configWidget);
-    selector->setObjectName("transportSelector");
-    selector->setAccessibleName(tr("传感数据接收方式"));
-    auto *stack = new QStackedWidget(configWidget);
-    m_canPanel = new CanPanel(stack);
+    m_canPanel = new CanPanel(configWidget);
     m_canPanel->setObjectName("sensorCanPanel");
-    m_serialPanel = new SerialPanel(stack);
-    m_serialPanel->setObjectName("sensorUartPanel");
-    selector->addItem(tr("CAN 总线"), QStringLiteral("can"));
-    selector->addItem(tr("串口"), QStringLiteral("serial"));
-    selector->setVisible(selector->count() > 1);
-    configInner->addWidget(selector);
-    configInner->addWidget(stack, 1);
-    stack->addWidget(m_canPanel);
-    stack->addWidget(m_serialPanel);
-
-    const auto selectTransport = [this, selector, stack]
-    {
-        const bool canSelected = selector->currentData().toString() == QStringLiteral("can");
-        if (canSelected && m_serialPanel->isWaitingForReconnect())
-            m_serialPanel->cancelReconnect();
-        stack->setCurrentWidget(canSelected ? static_cast<QWidget *>(m_canPanel) : m_serialPanel);
-    };
-#ifdef Q_OS_LINUX
-    const auto defaultTransport = QStringLiteral("can");
-#else
-    const auto defaultTransport = QStringLiteral("serial");
-#endif
-    const int saved = selector->findData(QSettings().value("connection/transport", defaultTransport));
-    selector->setCurrentIndex(qMax(0, saved));
-    selectTransport();
-    connect(selector, &QComboBox::currentIndexChanged, this, [selector, selectTransport]
-    {
-        QSettings().setValue("connection/transport", selector->currentData());
-        selectTransport();
-    });
-    const auto setConnectionState = [selector](bool connected) { selector->setEnabled(!connected); };
-    connect(m_canPanel, &CanPanel::connectionChanged, selector, setConnectionState);
-    connect(m_serialPanel, &SerialPanel::connectionChanged, selector, setConnectionState);
+    configInner->addWidget(m_canPanel, 1);
     return configWidget;
-}
-SerialPanel* ConfigStatusPanel::serialPanel() const
-{
-    return m_serialPanel;
 }
 CanPanel* ConfigStatusPanel::canPanel() const
 {

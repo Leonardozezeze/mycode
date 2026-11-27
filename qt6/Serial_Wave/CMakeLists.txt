@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(Serial_Wave VERSION 0.2.0 LANGUAGES CXX)
+project(TelemetryWave VERSION 0.2.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets PrintSupport SerialPort SerialBus Concurrent)
@@ -21,26 +21,25 @@ add_library(serial_wave_ui STATIC
     canpanel.h canpanel.cpp canframe.h
     logpanel.h logpanel.cpp
     uartterminal.h uartterminal.cpp
+    shellcommanddialog.h shellcommanddialog.cpp
     commandbar.h commandbar.cpp
     statuspanel.h statuspanel.cpp
     recordingpanel.h recordingpanel.cpp)
 target_link_libraries(serial_wave_ui PUBLIC serial_wave_backend Qt::Widgets Qt::PrintSupport Qt::SerialPort Qt::SerialBus Qt::Concurrent)
-qt_add_executable(Serial_Wave WIN32 MACOSX_BUNDLE main.cpp)
-target_link_libraries(Serial_Wave PRIVATE serial_wave_ui)
+qt_add_executable(TelemetryWave WIN32 MACOSX_BUNDLE main.cpp)
+target_link_libraries(TelemetryWave PRIVATE serial_wave_ui)
 
 if(APPLE)
     # Qt's peakcan plugin loads the bare name "PCBUSB" via dlopen().
     # MacCAN installs libPCBUSB.dylib, which that lookup does not find.
     find_library(PCBUSB_LIBRARY NAMES PCBUSB PATHS /usr/local/lib /opt/homebrew/lib)
     if(PCBUSB_LIBRARY)
-        add_custom_command(TARGET Serial_Wave POST_BUILD
+        add_custom_command(TARGET TelemetryWave POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory
-                "$<TARGET_BUNDLE_DIR:Serial_Wave>/Contents/Frameworks"
+                "$<TARGET_BUNDLE_DIR:TelemetryWave>/Contents/Frameworks"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PCBUSB_LIBRARY}"
-                "$<TARGET_BUNDLE_DIR:Serial_Wave>/Contents/Frameworks/PCBUSB"
+                "$<TARGET_BUNDLE_DIR:TelemetryWave>/Contents/Frameworks/PCBUSB"
             VERBATIM)
-        install(FILES "${PCBUSB_LIBRARY}"
-            DESTINATION "Serial_Wave.app/Contents/Frameworks" RENAME PCBUSB)
     else()
         message(STATUS "MacCAN libPCBUSB not found; install it and reconfigure to enable PCAN on macOS")
     endif()
@@ -55,9 +54,13 @@ if(BUILD_TESTING)
     set_tests_properties(serial_wave_tests PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 endif()
 
-install(TARGETS Serial_Wave
+install(TARGETS TelemetryWave
     BUNDLE DESTINATION .
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-qt_generate_deploy_app_script(TARGET Serial_Wave OUTPUT_SCRIPT deploy_script NO_UNSUPPORTED_PLATFORM_ERROR)
+if(APPLE AND PCBUSB_LIBRARY)
+    install(FILES "${PCBUSB_LIBRARY}"
+        DESTINATION "TelemetryWave.app/Contents/Frameworks" RENAME PCBUSB)
+endif()
+qt_generate_deploy_app_script(TARGET TelemetryWave OUTPUT_SCRIPT deploy_script NO_UNSUPPORTED_PLATFORM_ERROR)
 install(SCRIPT ${deploy_script})

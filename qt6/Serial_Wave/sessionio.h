@@ -16,7 +16,29 @@ struct SamplePoint
         v.fill(qQNaN());
         return v;
     }();
-    bool breakBefore = false;
+    std::array<bool, waveformChannelCount> breakBefore{};
+
+    bool hasPlotPoint(int channel) const
+    {
+        // 完整串口帧未带推杆反馈时，应保留这一处明确的缺失值。
+        // CAN 的单组报文只影响自己携带的通道。
+        return qIsFinite(values[channel]) ||
+               (channel == 4 && qIsFinite(values[0]) && qIsFinite(values[2]));
+    }
+
+    bool markChannelGaps(std::array<double, waveformChannelCount> &lastTimes, double gap)
+    {
+        bool hasGap = false;
+        for (int c = 0; c < waveformChannelCount; ++c)
+        {
+            if (!qIsFinite(values[c]))
+                continue;
+            breakBefore[c] = lastTimes[c] >= 0 && time - lastTimes[c] > gap;
+            lastTimes[c] = time;
+            hasGap |= breakBefore[c];
+        }
+        return hasGap;
+    }
 };
 struct ChannelStats
 {

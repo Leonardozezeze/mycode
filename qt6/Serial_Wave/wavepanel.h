@@ -138,6 +138,7 @@ private:
     QVector<QCPItemText *> m_eventLabels;
     bool m_eventLoadError = false;
     std::deque<SamplePoint> m_recent;
+    std::array<double, waveformChannelCount> m_lastChannelTimes;
     QString m_recordingDirectory;
     bool m_recording = false;
     bool m_playback = false;

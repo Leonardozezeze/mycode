@@ -4,6 +4,8 @@
 #include <QList>
 #include <QTime>
 #include <QWidget>
+#include <array>
+#include <optional>
 
 class QCanBusDevice;
 class QLabel;
@@ -22,10 +24,19 @@ public:
     explicit CanPanel(QWidget *parent = nullptr, Role role = Role::Sensor);
     ~CanPanel() override;
     QString sendCommand(quint32 id, const QByteArray &payload);
+    bool canConfigureIds() const { return !m_device; }
+    QString receiveIdText() const;
+    std::array<QString, 3> sensorIdTexts() const;
+    void setSensorIdTexts(const std::array<QString, 3> &texts);
+    void setConsoleReceiveIdText(const QString &text);
+    std::optional<int> sensorFrameIndex(quint32 id) const;
+    static QList<quint32> parseSensorIds(const std::array<QString, 3> &texts, QString &error);
+    static QList<quint32> parseConsoleIds(const QString &text, QString &error);
 
 signals:
     void frameReceived(quint32 id, const QByteArray &payload);
     void connectionChanged(bool connected);
+    void idConfigurationRequested();
 
 protected:
     void showEvent(QShowEvent *event) override;
@@ -46,6 +57,9 @@ private:
     QString m_settingsGroup;
     QLineEdit *m_interface = nullptr;
     QLineEdit *m_canId = nullptr;
+    QString m_speedIdText;
+    QString m_actuatorIdText;
+    QList<quint32> m_sensorIds;
     QLineEdit *m_bitrateInput = nullptr; // 非 Linux：PCAN 波特率由程序设置
     QLabel *m_receiveIdStatus = nullptr;
     QPushButton *m_connect = nullptr;

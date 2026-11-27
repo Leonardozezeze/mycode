@@ -37,6 +37,7 @@ void ProtocolParser::resetSession(const QElapsedTimer &clock)
     resetStream();
     m_frameIndex = m_frames = m_errors = 0;
     m_crushSum = m_impuritySum = 0.0;
+    m_qualityFrames = 0;
     if (clock.isValid())
         m_sessionClock = clock;
     else
@@ -59,6 +60,8 @@ void ProtocolParser::resetStream()
     m_rateClock.invalidate();
     m_rateFrames = 0;
     m_updateHz = qQNaN();
+    m_latestCan = {};
+    m_canUpdateTime.fill(qQNaN());
 }
 
 void ProtocolParser::feed(const QByteArray &data)
@@ -144,37 +147,55 @@ void ProtocolParser::feed(const QByteArray &data)
     }
 }
 
-void ProtocolParser::feedCan(const QByteArray &payload)
+void ProtocolParser::feedCan(const QByteArray &payload, CanTelemetry kind)
 {
-    if (payload.size() != 2 * kFloatBytes)
+    if (payload.size() != (kind == CanTelemetry::Actuator ? kFloatBytes + 1 : 2 * kFloatBytes))
     {
         ++m_errors;
         return;
     }
-    const double impurity = readFloatLE(payload.constData());
-    const double crush = readFloatLE(payload.constData() + kFloatBytes);
-    if (!(impurity >= 0.0 && impurity <= 1.0 && crush >= 0.0 && crush <= 1.0))
+    const double first = readFloatLE(payload.constData());
+    const double second = kind == CanTelemetry::Actuator
+        ? double(uchar(payload[kFloatBytes])) : readFloatLE(payload.constData() + kFloatBytes);
+    if (!qIsFinite(first) || !qIsFinite(second) ||
+        (kind == CanTelemetry::Quality && (first < 0 || first > 1 || second < 0 || second > 1)) ||
+        (kind == CanTelemetry::Actuator && (first < 0 || first > 100 ||
+                                          second > int(ActuatorState::Fault))))
     {
         ++m_errors;
         return;
     }
 
     TelemetrySample frame;
-    frame.impurityRate = impurity * 100.0;
-    frame.crushRate = crush * 100.0;
-    handleFrame(frame);
+    switch (kind)
+    {
+    case CanTelemetry::Quality:
+        frame.impurityRate = first * 100;
+        frame.crushRate = second * 100;
+        break;
+    case CanTelemetry::Speed:
+        frame.rpm = first;
+        frame.targetRpm = second;
+        break;
+    case CanTelemetry::Actuator:
+        frame.actuatorPosition = first;
+        frame.actuatorState = ActuatorState(int(second));
+        break;
+    }
+    handleFrame(frame, kind);
 }
 
-void ProtocolParser::handleFrame(TelemetrySample frame)
+void ProtocolParser::handleFrame(TelemetrySample frame, std::optional<CanTelemetry> kind)
 {
     frame.index = m_frameIndex++;
     frame.time = double(m_sessionClock.nsecsElapsed()) / 1e9;
-    const double crushRate = frame.crushRate, impurityRate = frame.impurityRate;
-    const double rpm = frame.rpm, targetRpm = frame.targetRpm;
-
     ++m_frames;
-    m_crushSum += crushRate;
-    m_impuritySum += impurityRate;
+    if (qIsFinite(frame.crushRate))
+    {
+        ++m_qualityFrames;
+        m_crushSum += frame.crushRate;
+        m_impuritySum += frame.impurityRate;
+    }
 
     // 每满 1 秒统计一次实际更新频率
     if (!m_rateClock.isValid())
@@ -197,17 +218,57 @@ void ProtocolParser::handleFrame(TelemetrySample frame)
     if (m_frameHandler)
         m_frameHandler(frame);
 
-    // 状态：协议里没有电机电流，保持 NaN，界面会显示 "--"
+    // 每个 CAN 报文独立采样；状态卡显示各报文最近一次有效值。
+    auto latest = frame;
+    if (kind)
+    {
+        switch (*kind)
+        {
+        case CanTelemetry::Quality:
+            m_latestCan.crushRate = frame.crushRate;
+            m_latestCan.impurityRate = frame.impurityRate;
+            break;
+        case CanTelemetry::Speed:
+            m_latestCan.rpm = frame.rpm;
+            m_latestCan.targetRpm = frame.targetRpm;
+            break;
+        case CanTelemetry::Actuator:
+            m_latestCan.actuatorPosition = frame.actuatorPosition;
+            m_latestCan.actuatorState = frame.actuatorState;
+            break;
+        }
+        m_canUpdateTime[int(*kind)] = frame.time;
+        const auto fresh = [&](CanTelemetry channel)
+        { return frame.time - m_canUpdateTime[int(channel)] < 2.0; };
+        if (fresh(CanTelemetry::Quality))
+        {
+            latest.crushRate = m_latestCan.crushRate;
+            latest.impurityRate = m_latestCan.impurityRate;
+        }
+        if (fresh(CanTelemetry::Speed))
+        {
+            latest.rpm = m_latestCan.rpm;
+            latest.targetRpm = m_latestCan.targetRpm;
+        }
+        if (fresh(CanTelemetry::Actuator))
+        {
+            latest.actuatorPosition = m_latestCan.actuatorPosition;
+            latest.actuatorState = m_latestCan.actuatorState;
+        }
+    }
     MachineStatus status;
-    status.crushRate = crushRate;
-    status.crushRateAvg = m_crushSum / double(m_frames);
-    status.impurityRate = impurityRate;
-    status.impurityRateAvg = m_impuritySum / double(m_frames);
-    status.rpm = rpm;
-    status.rpmTarget = targetRpm;
-    status.actuatorPosition = frame.actuatorPosition;
-    status.actuatorState = frame.actuatorState;
-    status.running = qAbs(rpm) > 0.0; // 正反转都算运行
+    status.crushRate = latest.crushRate;
+    status.impurityRate = latest.impurityRate;
+    if (m_qualityFrames)
+    {
+        status.crushRateAvg = m_crushSum / double(m_qualityFrames);
+        status.impurityRateAvg = m_impuritySum / double(m_qualityFrames);
+    }
+    status.rpm = latest.rpm;
+    status.rpmTarget = latest.targetRpm;
+    status.actuatorPosition = latest.actuatorPosition;
+    status.actuatorState = latest.actuatorState;
+    status.running = qAbs(latest.rpm) > 0.0; // 正反转都算运行
     status.frames = m_frames;
     status.errors = m_errors;
     status.updateHz = m_updateHz;
